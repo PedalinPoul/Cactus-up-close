@@ -1,0 +1,1782 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0a0e14">
+<title>Avalanche Rescue — Training Simulator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
+<style>
+/* ─── TOKENS ──────────────────────────────────────────────────────────────── */
+:root {
+  --c-bg:       #0a0e14;
+  --c-surf:     #131b26;
+  --c-surf2:    #1a2535;
+  --c-border:   #1e2d3d;
+  --c-snow:     #d6e8f8;
+  --c-ice:      #5bc8f5;
+  --c-ice-dim:  rgba(91,200,245,0.18);
+  --c-danger:   #e84040;
+  --c-warn:     #f5a623;
+  --c-ok:       #3dca72;
+  --c-text:     #c8ddf0;
+  --c-muted:    #5a7a96;
+  --f-ui:       'Inter', system-ui, sans-serif;
+  --f-mono:     'Orbitron', 'Courier New', monospace;
+  --r:          14px;
+  --r-sm:       8px;
+  --ease:       cubic-bezier(0.4,0,0.2,1);
+}
+
+/* ─── RESET ──────────────────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent; }
+html, body { height:100%; overflow:hidden; background:var(--c-bg); color:var(--c-text); font-family:var(--f-ui); -webkit-font-smoothing:antialiased; }
+
+/* ─── APP SHELL ──────────────────────────────────────────────────────────── */
+#app { position:fixed; inset:0; overflow:hidden; }
+
+/* ─── HUD ────────────────────────────────────────────────────────────────── */
+#hud {
+  position:fixed; top:0; left:0; right:0; z-index:100;
+  display:flex; align-items:center; justify-content:space-between;
+  padding: env(safe-area-inset-top, 0px) 16px 0;
+  padding-top: max(env(safe-area-inset-top,0px), 8px);
+  padding-bottom: 8px;
+  background:linear-gradient(to bottom,rgba(10,14,20,0.98),rgba(10,14,20,0));
+  opacity:0; pointer-events:none; transition:opacity 0.4s var(--ease);
+}
+#hud.visible { opacity:1; pointer-events:all; }
+
+.hud-block { display:flex; flex-direction:column; align-items:center; gap:1px; min-width:64px; }
+.hud-label { font-size:8px; font-weight:700; letter-spacing:2px; color:var(--c-muted); text-transform:uppercase; }
+.hud-val { font-family:var(--f-mono); font-size:18px; font-weight:900; line-height:1; }
+#hud-timer .hud-val { color:var(--c-snow); }
+#hud-timer.critical .hud-val { color:var(--c-danger); animation:blink 0.6s ease-in-out infinite; }
+#hud-score .hud-val { color:var(--c-ice); }
+#hud-survival .hud-val { color:var(--c-ok); transition:color 0.5s; }
+#hud-survival.warn .hud-val { color:var(--c-warn); }
+#hud-survival.critical .hud-val { color:var(--c-danger); }
+
+/* ─── SCENE SYSTEM ───────────────────────────────────────────────────────── */
+.scene {
+  position:absolute; inset:0;
+  display:flex; flex-direction:column;
+  opacity:0; transform:translateY(18px);
+  pointer-events:none;
+  transition:opacity 0.3s var(--ease), transform 0.3s var(--ease);
+  overflow-y:auto; overflow-x:hidden;
+  -webkit-overflow-scrolling:touch;
+  padding-bottom: env(safe-area-inset-bottom, 16px);
+}
+.scene.active { opacity:1; transform:translateY(0); pointer-events:all; }
+.scene.exit   { opacity:0; transform:translateY(-18px); pointer-events:none; }
+
+/* ─── SCENE: SPLASH ──────────────────────────────────────────────────────── */
+#scene-splash {
+  justify-content:center; align-items:center;
+  background: radial-gradient(ellipse at 50% 30%, #0e1e35 0%, #0a0e14 70%);
+}
+.splash-mountains {
+  position:absolute; bottom:0; left:0; right:0; height:55%;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 300'%3E%3Cpath d='M0,300 L0,180 L80,100 L160,200 L240,80 L320,160 L400,40 L480,140 L560,70 L640,150 L720,90 L800,160 L800,300Z' fill='%23111b28'/%3E%3Cpath d='M0,300 L0,220 L100,160 L180,220 L260,140 L340,200 L420,110 L500,180 L580,130 L660,190 L740,140 L800,190 L800,300Z' fill='%230d1520'/%3E%3C/svg%3E") no-repeat bottom/cover;
+}
+.splash-stars {
+  position:absolute; inset:0;
+  background-image:
+    radial-gradient(circle, rgba(255,255,255,0.8) 1px, transparent 1px),
+    radial-gradient(circle, rgba(255,255,255,0.5) 1px, transparent 1px),
+    radial-gradient(circle, rgba(255,255,255,0.3) 1px, transparent 1px);
+  background-size:120px 120px, 80px 80px, 200px 200px;
+  background-position:15px 10px, 45px 55px, 70px 20px;
+  opacity:0.6;
+}
+.splash-content {
+  position:relative; z-index:2;
+  display:flex; flex-direction:column; align-items:center;
+  padding:32px 24px; gap:24px; text-align:center; width:100%; max-width:420px;
+}
+.splash-badge {
+  font-size:10px; font-weight:700; letter-spacing:3px; color:var(--c-ice);
+  text-transform:uppercase; border:1px solid var(--c-ice-dim);
+  padding:4px 12px; border-radius:20px;
+}
+.splash-title {
+  font-family:var(--f-mono); font-size:clamp(28px,8vw,42px);
+  font-weight:900; line-height:1.1; color:var(--c-snow);
+  text-shadow: 0 0 40px rgba(91,200,245,0.4);
+}
+.splash-title span { color:var(--c-ice); display:block; }
+.splash-subtitle { font-size:13px; color:var(--c-muted); letter-spacing:2px; text-transform:uppercase; }
+.splash-stats {
+  display:flex; gap:0; width:100%; border:1px solid var(--c-border); border-radius:var(--r); overflow:hidden;
+}
+.splash-stat { flex:1; padding:16px 8px; display:flex; flex-direction:column; align-items:center; gap:4px; }
+.splash-stat:first-child { border-right:1px solid var(--c-border); }
+.stat-num { font-family:var(--f-mono); font-size:28px; font-weight:900; color:var(--c-ice); }
+.stat-lbl { font-size:11px; color:var(--c-muted); text-align:center; line-height:1.4; }
+.splash-disc { font-size:11px; color:var(--c-muted); line-height:1.6; max-width:300px; }
+
+/* ─── SCENE: SITUATION ───────────────────────────────────────────────────── */
+#scene-situation {
+  background:var(--c-bg);
+  padding-top: max(env(safe-area-inset-top,0px), 60px);
+}
+.situation-hero {
+  position:relative; height:200px; overflow:hidden; flex-shrink:0;
+  background:linear-gradient(160deg,#0b1a2e 0%,#1a2c1a 100%);
+}
+.situation-hero-art {
+  position:absolute; inset:0; opacity:0.6;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 600 200'%3E%3Cdefs%3E%3ClinearGradient id='sky' x1='0' y1='0' x2='0' y2='1'%3E%3Cstop offset='0' stop-color='%230d1e35'/%3E%3Cstop offset='1' stop-color='%231a3a20'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect fill='url(%23sky)' width='600' height='200'/%3E%3Cpath d='M0,200 L0,120 L60,80 L120,110 L200,50 L280,90 L360,30 L440,75 L520,45 L600,80 L600,200Z' fill='%23213528' opacity='0.8'/%3E%3Cpath d='M0,200 L0,150 L80,120 L160,145 L240,105 L320,135 L400,95 L480,125 L560,100 L600,120 L600,200Z' fill='%231a2b1e' opacity='0.9'/%3E%3Cpath d='M150,200 L250,80 L350,200Z' fill='%23e8f0f8' opacity='0.85'/%3E%3Cpath d='M220,200 L290,100 L360,200Z' fill='%23d0e0f0' opacity='0.7'/%3E%3Cpath d='M30,200 L100,110 L170,200Z' fill='%23e0ecf8' opacity='0.6'/%3E%3C/svg%3E") no-repeat center/cover;
+}
+.situation-hero-overlay {
+  position:absolute; inset:0;
+  background:linear-gradient(to bottom, transparent 40%, var(--c-bg) 100%);
+}
+.situation-incident-badge {
+  position:absolute; bottom:16px; left:50%; transform:translateX(-50%);
+  background:rgba(232,64,64,0.15); border:1px solid rgba(232,64,64,0.5);
+  color:var(--c-danger); font-size:11px; font-weight:700; letter-spacing:2px;
+  padding:6px 16px; border-radius:20px; white-space:nowrap;
+  animation:pulse-border 1.5s ease-in-out infinite;
+}
+.situation-body { padding:0 20px 32px; display:flex; flex-direction:column; gap:20px; }
+.situation-meta {
+  display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:-8px;
+}
+.meta-card {
+  background:var(--c-surf); border:1px solid var(--c-border);
+  border-radius:var(--r-sm); padding:10px 12px;
+  display:flex; flex-direction:column; gap:3px;
+}
+.meta-card-label { font-size:9px; font-weight:700; letter-spacing:2px; color:var(--c-muted); text-transform:uppercase; }
+.meta-card-val { font-size:13px; font-weight:600; color:var(--c-snow); line-height:1.3; }
+.situation-narrative { display:flex; flex-direction:column; gap:12px; }
+.narrative-p { font-size:15px; line-height:1.7; color:var(--c-text); }
+.narrative-p.incident {
+  font-size:17px; font-weight:600; color:var(--c-snow);
+  border-left:3px solid var(--c-danger); padding-left:14px;
+  line-height:1.6;
+}
+.victims-list { display:flex; flex-direction:column; gap:8px; }
+.victim-card {
+  background:var(--c-surf); border:1px solid var(--c-border);
+  border-radius:var(--r-sm); padding:12px 14px;
+  display:flex; align-items:center; gap:12px;
+}
+.victim-icon { font-size:24px; flex-shrink:0; }
+.victim-info { flex:1; }
+.victim-name { font-size:14px; font-weight:700; color:var(--c-snow); }
+.victim-status { font-size:12px; color:var(--c-muted); margin-top:2px; }
+.victim-card.partial .victim-status { color:var(--c-warn); }
+.victim-card.full .victim-status { color:var(--c-danger); }
+
+/* ─── SCENE: DECISION ───────────────────────────────────────────────────── */
+.scene-decision {
+  background:var(--c-bg);
+  padding-top: max(env(safe-area-inset-top,0px), 60px);
+}
+.decision-header { padding:20px 20px 0; }
+.decision-phase {
+  font-size:9px; font-weight:700; letter-spacing:3px; color:var(--c-ice);
+  text-transform:uppercase; margin-bottom:8px;
+}
+.decision-clock {
+  display:flex; align-items:center; gap:6px; margin-bottom:12px;
+}
+.clock-icon { color:var(--c-warn); font-size:14px; }
+.clock-text { font-size:12px; color:var(--c-warn); font-weight:500; }
+.decision-q {
+  font-size:18px; font-weight:700; color:var(--c-snow); line-height:1.4;
+}
+.decision-options { padding:16px 20px; display:flex; flex-direction:column; gap:10px; }
+.opt-btn {
+  background:var(--c-surf); border:1.5px solid var(--c-border);
+  border-radius:var(--r); padding:16px 18px;
+  display:flex; align-items:flex-start; gap:12px;
+  cursor:pointer; text-align:left; width:100%;
+  transition:background 0.15s, border-color 0.15s, transform 0.1s;
+  color:var(--c-text); font-family:var(--f-ui); font-size:14px; line-height:1.5;
+}
+.opt-btn:active { transform:scale(0.98); }
+.opt-btn:disabled { opacity:0.5; cursor:default; }
+.opt-letter {
+  flex-shrink:0; width:24px; height:24px; border-radius:50%;
+  background:var(--c-surf2); border:1px solid var(--c-border);
+  display:flex; align-items:center; justify-content:center;
+  font-size:11px; font-weight:700; color:var(--c-muted);
+  margin-top:1px;
+}
+.opt-btn.correct   { background:rgba(61,202,114,0.12); border-color:var(--c-ok); }
+.opt-btn.correct .opt-letter { background:var(--c-ok); border-color:var(--c-ok); color:#fff; }
+.opt-btn.wrong     { background:rgba(232,64,64,0.1); border-color:var(--c-danger); }
+.opt-btn.wrong .opt-letter { background:var(--c-danger); border-color:var(--c-danger); color:#fff; }
+.opt-btn.partial   { background:rgba(245,166,35,0.1); border-color:var(--c-warn); }
+.opt-btn.partial .opt-letter { background:var(--c-warn); border-color:var(--c-warn); color:#fff; }
+
+/* Feedback panel */
+.feedback-panel {
+  margin:0 20px 20px; padding:16px 18px;
+  border-radius:var(--r); display:none; flex-direction:column; gap:8px;
+  animation:slide-up 0.25s var(--ease) forwards;
+}
+.feedback-panel.show { display:flex; }
+.feedback-panel.fb-correct { background:rgba(61,202,114,0.1); border:1px solid rgba(61,202,114,0.35); }
+.feedback-panel.fb-wrong   { background:rgba(232,64,64,0.1); border:1px solid rgba(232,64,64,0.35); }
+.feedback-panel.fb-partial { background:rgba(245,166,35,0.1); border:1px solid rgba(245,166,35,0.35); }
+.feedback-title { font-size:14px; font-weight:700; }
+.feedback-panel.fb-correct .feedback-title { color:var(--c-ok); }
+.feedback-panel.fb-wrong .feedback-title   { color:var(--c-danger); }
+.feedback-panel.fb-partial .feedback-title { color:var(--c-warn); }
+.feedback-text { font-size:13px; line-height:1.6; color:var(--c-text); }
+.feedback-tip {
+  font-size:12px; color:var(--c-muted); padding-top:8px;
+  border-top:1px solid var(--c-border); line-height:1.5;
+}
+.feedback-tip strong { color:var(--c-ice); }
+
+/* ─── SCENE: BEACON ──────────────────────────────────────────────────────── */
+#scene-beacon {
+  background:var(--c-bg);
+  padding-top: max(env(safe-area-inset-top,0px), 60px);
+}
+.beacon-header { padding:12px 20px; flex-shrink:0; }
+.beacon-phase-label { font-size:9px; font-weight:700; letter-spacing:3px; color:var(--c-ice); text-transform:uppercase; }
+.beacon-instruction { font-size:14px; font-weight:500; color:var(--c-text); margin-top:4px; line-height:1.4; }
+
+.beacon-hud {
+  display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px;
+  padding:0 16px 12px; flex-shrink:0;
+}
+.bhud-card {
+  background:var(--c-surf); border:1px solid var(--c-border);
+  border-radius:var(--r-sm); padding:10px; text-align:center;
+}
+.bhud-label { font-size:8px; font-weight:700; letter-spacing:2px; color:var(--c-muted); text-transform:uppercase; margin-bottom:4px; }
+.bhud-val { font-family:var(--f-mono); font-size:20px; font-weight:900; color:var(--c-snow); line-height:1; }
+#bhud-dist { color:var(--c-ice); }
+#bhud-dist.close { color:var(--c-ok); }
+#bhud-dist.near  { color:var(--c-warn); }
+
+.beacon-canvas-wrap {
+  flex:1; display:flex; align-items:center; justify-content:center;
+  padding:0 12px 8px; min-height:0;
+}
+#beacon-canvas {
+  border-radius:var(--r); border:1px solid var(--c-border);
+  touch-action:none; cursor:crosshair;
+  width:100%; max-width:400px; max-height:420px;
+  display:block;
+}
+
+.beacon-arrow-wrap {
+  flex-shrink:0; display:flex; align-items:center; justify-content:center;
+  padding:8px 0 12px; gap:16px;
+}
+.beacon-compass {
+  width:64px; height:64px; position:relative;
+  display:flex; align-items:center; justify-content:center;
+}
+.beacon-compass-ring {
+  position:absolute; inset:0; border-radius:50%;
+  border:2px solid var(--c-border);
+  background:radial-gradient(circle, var(--c-surf2) 0%, var(--c-surf) 100%);
+}
+#beacon-arrow-svg {
+  position:relative; z-index:2; transition:transform 0.3s var(--ease);
+}
+.beacon-signal-bar {
+  flex:1; max-width:160px; height:8px;
+  background:var(--c-surf); border-radius:4px; overflow:hidden;
+}
+.beacon-signal-fill {
+  height:100%; border-radius:4px;
+  background:linear-gradient(to right, var(--c-ok), var(--c-ice));
+  transition:width 0.4s var(--ease);
+}
+
+/* ─── SCENE: PROBE ───────────────────────────────────────────────────────── */
+#scene-probe {
+  background:var(--c-bg);
+  padding-top: max(env(safe-area-inset-top,0px), 60px);
+}
+.probe-header { padding:20px 20px 12px; }
+.probe-phase { font-size:9px; font-weight:700; letter-spacing:3px; color:var(--c-ice); text-transform:uppercase; margin-bottom:6px; }
+.probe-q { font-size:16px; font-weight:600; color:var(--c-snow); line-height:1.4; }
+.probe-sub { font-size:13px; color:var(--c-muted); margin-top:6px; }
+.probe-attempts { font-size:12px; color:var(--c-warn); margin-top:4px; }
+
+.probe-grid-wrap { padding:0 24px 16px; display:flex; flex-direction:column; align-items:center; gap:12px; }
+.probe-visual {
+  position:relative; width:100%; max-width:320px;
+  background:linear-gradient(135deg, #d4e8f8 0%, #e8f4ff 50%, #c8dcee 100%);
+  border-radius:var(--r); overflow:hidden; aspect-ratio:1;
+  border:2px solid var(--c-border);
+}
+.probe-snow-texture {
+  position:absolute; inset:0; opacity:0.3;
+  background-image: repeating-linear-gradient(45deg, rgba(255,255,255,0.3) 0, rgba(255,255,255,0.3) 1px, transparent 0, transparent 50%);
+  background-size:12px 12px;
+}
+.probe-grid {
+  position:absolute; inset:8px;
+  display:grid; grid-template-columns:repeat(3,1fr); grid-template-rows:repeat(3,1fr); gap:6px;
+}
+.probe-cell {
+  background:rgba(255,255,255,0.4); border:2px solid rgba(255,255,255,0.6);
+  border-radius:var(--r-sm); cursor:pointer;
+  display:flex; align-items:center; justify-content:center;
+  font-family:var(--f-mono); font-size:16px; font-weight:700;
+  color:transparent; transition:all 0.15s;
+  position:relative;
+}
+.probe-cell:active { transform:scale(0.93); }
+.probe-cell.miss { background:rgba(232,64,64,0.25); border-color:rgba(232,64,64,0.5); color:rgba(232,64,64,0.8); }
+.probe-cell.hit  { background:rgba(61,202,114,0.35); border-color:rgba(61,202,114,0.7); color:rgba(61,202,114,0.9); animation:hit-pulse 0.4s ease; }
+.probe-cell.probed { pointer-events:none; }
+
+/* ─── SCENE: SHOVEL ──────────────────────────────────────────────────────── */
+#scene-shovel {
+  background:var(--c-bg);
+  padding-top: max(env(safe-area-inset-top,0px), 60px);
+}
+.technique-cards { padding:0 20px 16px; display:flex; flex-direction:column; gap:10px; }
+.technique-card {
+  background:var(--c-surf); border:1.5px solid var(--c-border);
+  border-radius:var(--r); padding:16px; cursor:pointer;
+  transition:all 0.15s; display:flex; gap:14px; align-items:flex-start;
+}
+.technique-card:active { transform:scale(0.98); }
+.technique-diagram {
+  flex-shrink:0; width:64px; height:64px;
+  border-radius:var(--r-sm); overflow:hidden;
+  background:var(--c-surf2); display:flex; align-items:center; justify-content:center;
+}
+.technique-diagram svg { width:56px; height:56px; }
+.technique-info { flex:1; }
+.technique-name { font-size:14px; font-weight:700; color:var(--c-snow); margin-bottom:4px; }
+.technique-desc { font-size:12px; color:var(--c-muted); line-height:1.5; }
+.technique-card.correct { border-color:var(--c-ok); background:rgba(61,202,114,0.08); }
+.technique-card.wrong   { border-color:var(--c-danger); background:rgba(232,64,64,0.08); opacity:0.7; }
+
+/* ─── SCENE: PATIENT CARE ────────────────────────────────────────────────── */
+#scene-care {
+  background:var(--c-bg);
+  padding-top: max(env(safe-area-inset-top,0px), 60px);
+}
+.care-vitals {
+  margin:0 20px 16px; padding:14px 16px;
+  background:var(--c-surf); border:1px solid var(--c-border); border-radius:var(--r);
+  display:grid; grid-template-columns:1fr 1fr; gap:10px;
+}
+.vital-item { display:flex; flex-direction:column; gap:2px; }
+.vital-label { font-size:9px; font-weight:700; letter-spacing:2px; color:var(--c-muted); text-transform:uppercase; }
+.vital-val { font-family:var(--f-mono); font-size:16px; color:var(--c-snow); }
+.vital-val.abnormal { color:var(--c-danger); animation:blink 1s ease infinite; }
+
+/* ─── SCENE: DEBRIEF ─────────────────────────────────────────────────────── */
+#scene-debrief {
+  background:var(--c-bg);
+  padding-top: max(env(safe-area-inset-top,0px), 60px);
+}
+.debrief-header { padding:20px 20px 0; text-align:center; }
+.debrief-outcome {
+  font-family:var(--f-mono); font-size:28px; font-weight:900;
+  margin-bottom:4px;
+}
+.debrief-outcome.excellent { color:var(--c-ok); }
+.debrief-outcome.good      { color:var(--c-ice); }
+.debrief-outcome.fair      { color:var(--c-warn); }
+.debrief-outcome.poor      { color:var(--c-danger); }
+.debrief-sub { font-size:14px; color:var(--c-muted); }
+
+.debrief-chart-wrap { padding:16px 20px 8px; }
+.debrief-chart-label { font-size:10px; color:var(--c-muted); letter-spacing:1px; text-transform:uppercase; margin-bottom:8px; }
+#debrief-canvas { width:100%; border-radius:var(--r-sm); display:block; }
+
+.debrief-stats { padding:0 20px; display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:16px; }
+.dstat { background:var(--c-surf); border:1px solid var(--c-border); border-radius:var(--r-sm); padding:12px; text-align:center; }
+.dstat-val { font-family:var(--f-mono); font-size:22px; font-weight:900; color:var(--c-ice); }
+.dstat-lbl { font-size:10px; color:var(--c-muted); margin-top:2px; text-transform:uppercase; letter-spacing:1px; }
+
+.debrief-decisions { padding:0 20px 8px; display:flex; flex-direction:column; gap:8px; }
+.debrief-decision-row {
+  background:var(--c-surf); border:1px solid var(--c-border);
+  border-radius:var(--r-sm); padding:12px 14px;
+  display:flex; align-items:flex-start; gap:10px;
+}
+.ddr-icon { font-size:16px; flex-shrink:0; margin-top:2px; }
+.ddr-content { flex:1; }
+.ddr-phase { font-size:10px; font-weight:700; letter-spacing:2px; color:var(--c-muted); text-transform:uppercase; }
+.ddr-result { font-size:13px; font-weight:600; margin-top:2px; }
+.ddr-result.ok { color:var(--c-ok); }
+.ddr-result.warn { color:var(--c-warn); }
+.ddr-result.bad { color:var(--c-danger); }
+.ddr-pts { font-family:var(--f-mono); font-size:13px; color:var(--c-ice); font-weight:700; flex-shrink:0; }
+
+.debrief-key-learning {
+  margin:0 20px 8px; padding:14px 16px;
+  background:rgba(91,200,245,0.06); border:1px solid rgba(91,200,245,0.2);
+  border-radius:var(--r);
+}
+.dkl-label { font-size:10px; font-weight:700; letter-spacing:2px; color:var(--c-ice); text-transform:uppercase; margin-bottom:8px; }
+.dkl-item { font-size:13px; color:var(--c-text); line-height:1.6; padding:4px 0; border-bottom:1px solid var(--c-border); }
+.dkl-item:last-child { border-bottom:none; padding-bottom:0; }
+.dkl-item::before { content:'→ '; color:var(--c-ice); font-weight:700; }
+
+/* ─── SHARED COMPONENTS ──────────────────────────────────────────────────── */
+.btn-primary {
+  background:var(--c-ice); color:#040c14; border:none;
+  font-family:var(--f-ui); font-size:15px; font-weight:800;
+  letter-spacing:1px; text-transform:uppercase;
+  padding:16px 32px; border-radius:var(--r);
+  cursor:pointer; width:100%; max-width:360px;
+  transition:opacity 0.15s, transform 0.1s;
+  -webkit-tap-highlight-color:transparent;
+}
+.btn-primary:active { transform:scale(0.97); opacity:0.85; }
+.btn-primary.secondary {
+  background:var(--c-surf2); color:var(--c-snow);
+  border:1.5px solid var(--c-border);
+}
+
+.btn-wrap { padding:0 20px 8px; display:flex; flex-direction:column; gap:10px; align-items:center; }
+
+.progress-bar { height:3px; background:var(--c-surf2); position:relative; flex-shrink:0; }
+.progress-fill { height:100%; background:var(--c-ice); transition:width 0.6s var(--ease); }
+
+.scene-scroll-pad { height:32px; flex-shrink:0; }
+
+/* ─── ANIMATIONS ─────────────────────────────────────────────────────────── */
+@keyframes blink {
+  0%,100% { opacity:1; }
+  50%      { opacity:0.35; }
+}
+@keyframes pulse-border {
+  0%,100% { box-shadow:0 0 0 0 rgba(232,64,64,0.4); }
+  50%      { box-shadow:0 0 0 6px rgba(232,64,64,0); }
+}
+@keyframes slide-up {
+  from { opacity:0; transform:translateY(10px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+@keyframes hit-pulse {
+  0%   { transform:scale(1); }
+  50%  { transform:scale(1.12); }
+  100% { transform:scale(1); }
+}
+@keyframes score-pop {
+  0%   { opacity:0; transform:translateY(0) scale(0.7); }
+  30%  { opacity:1; transform:translateY(-20px) scale(1.2); }
+  100% { opacity:0; transform:translateY(-50px) scale(1); }
+}
+@keyframes beacon-ping {
+  0%   { transform:scale(0.8); opacity:0.8; }
+  100% { transform:scale(2.5); opacity:0; }
+}
+.score-pop-el {
+  position:fixed; pointer-events:none; z-index:200;
+  font-family:var(--f-mono); font-size:22px; font-weight:900; color:var(--c-ok);
+  text-shadow:0 2px 12px rgba(61,202,114,0.6);
+  animation:score-pop 1s var(--ease) forwards;
+}
+
+/* Safe area bottom pad for fixed buttons */
+.safe-bottom { padding-bottom: max(env(safe-area-inset-bottom,0px),16px) !important; }
+
+@media (min-width:600px) {
+  .splash-title { font-size:52px; }
+  #beacon-canvas { max-width:380px; max-height:380px; }
+}
+</style>
+</head>
+<body>
+<div id="app">
+
+<!-- ══ HUD ══════════════════════════════════════════════════════════════════ -->
+<div id="hud">
+  <div id="hud-timer" class="hud-block">
+    <div class="hud-label">ELAPSED</div>
+    <div id="hud-timer-val" class="hud-val">00:00</div>
+  </div>
+  <div id="hud-survival" class="hud-block">
+    <div class="hud-label">SURVIVAL</div>
+    <div id="hud-surv-val" class="hud-val">93%</div>
+  </div>
+  <div id="hud-score" class="hud-block">
+    <div class="hud-label">SCORE</div>
+    <div id="hud-score-val" class="hud-val">0</div>
+  </div>
+</div>
+<div id="progress-bar" class="progress-bar" style="position:fixed;top:max(env(safe-area-inset-top,0px),44px);left:0;right:0;z-index:99;">
+  <div id="progress-fill" class="progress-fill" style="width:0%"></div>
+</div>
+
+<!-- ══ SCENE: SPLASH ════════════════════════════════════════════════════════ -->
+<div id="scene-splash" class="scene active">
+  <div class="splash-stars"></div>
+  <div class="splash-mountains"></div>
+  <div class="splash-content">
+    <div class="splash-badge">AIARE Protocol · Scenario Training</div>
+    <h1 class="splash-title">AVALANCHE<span>RESCUE</span></h1>
+    <p class="splash-subtitle">Training Simulator</p>
+    <div class="splash-stats">
+      <div class="splash-stat">
+        <div class="stat-num">92%</div>
+        <div class="stat-lbl">Survival if rescued<br>within 15 minutes</div>
+      </div>
+      <div class="splash-stat">
+        <div class="stat-num">30%</div>
+        <div class="stat-lbl">Survival after<br>45 minutes buried</div>
+      </div>
+    </div>
+    <button class="btn-primary" onclick="Game.start()">BEGIN SIMULATION</button>
+    <p class="splash-disc">This simulator teaches the AIARE companion rescue protocol. It does not replace hands-on avalanche training. Always carry beacon, probe, and shovel in avalanche terrain.</p>
+  </div>
+</div>
+
+<!-- ══ SCENE: SITUATION ══════════════════════════════════════════════════════ -->
+<div id="scene-situation" class="scene">
+  <div class="situation-hero">
+    <div class="situation-hero-art"></div>
+    <div class="situation-hero-overlay"></div>
+    <div class="situation-incident-badge">⚠ AVALANCHE INCIDENT</div>
+  </div>
+  <div class="situation-body">
+    <div class="situation-meta">
+      <div class="meta-card">
+        <div class="meta-card-label">Date &amp; Time</div>
+        <div class="meta-card-val">Feb 15 · 08:47</div>
+      </div>
+      <div class="meta-card">
+        <div class="meta-card-label">Location</div>
+        <div class="meta-card-val">Cascade Range · Zone 4B</div>
+      </div>
+      <div class="meta-card">
+        <div class="meta-card-label">Slope</div>
+        <div class="meta-card-val">37° SE Aspect</div>
+      </div>
+      <div class="meta-card">
+        <div class="meta-card-label">Conditions</div>
+        <div class="meta-card-val">30cm new snow, wind-loaded</div>
+      </div>
+    </div>
+    <div class="situation-narrative">
+      <p class="narrative-p">You're on a backcountry ski tour with your friends Jordan and Alex — a three-person team with avalanche gear: beacon, probe, and shovel, all carried.</p>
+      <p class="narrative-p">Two hours in, you reach the headwall. The morning light looks perfect. You cross the ridgeline and drop onto the northeast face.</p>
+      <p class="narrative-p incident">Then you hear the crack. The entire slope releases. A slab 80 meters wide breaks loose above your group.</p>
+      <p class="narrative-p">You self-arrest on the edge of the slide path. The debris settles 200 meters below.</p>
+    </div>
+    <div class="victims-list">
+      <div class="victim-card partial">
+        <div class="victim-icon">🎿</div>
+        <div class="victim-info">
+          <div class="victim-name">Alex</div>
+          <div class="victim-status">⚠ Partially visible — head above snow, not moving</div>
+        </div>
+      </div>
+      <div class="victim-card full">
+        <div class="victim-icon">🎿</div>
+        <div class="victim-info">
+          <div class="victim-name">Jordan</div>
+          <div class="victim-status">● Fully buried — last seen in slide center</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="btn-wrap">
+    <button class="btn-primary" onclick="Game.goTo('response')">RESPOND TO INCIDENT →</button>
+  </div>
+  <div class="scene-scroll-pad"></div>
+</div>
+
+<!-- ══ SCENE: DECISION 1 — FIRST RESPONSE ═══════════════════════════════════ -->
+<div id="scene-response" class="scene scene-decision">
+  <div class="decision-header">
+    <div class="decision-phase">Phase 1 · Organize</div>
+    <div class="decision-clock"><span class="clock-icon">⏱</span><span class="clock-text">Every second of burial reduces survival odds</span></div>
+    <div class="decision-q">The slide stops. You're safe at the debris edge. What do you do FIRST?</div>
+  </div>
+  <div class="decision-options" id="opts-response">
+    <button class="opt-btn" onclick="Game.decide('response','a')" id="opt-response-a">
+      <div class="opt-letter">A</div>
+      <div>Switch beacon to SEARCH and start scanning the debris immediately</div>
+    </button>
+    <button class="opt-btn" onclick="Game.decide('response','b')" id="opt-response-b">
+      <div class="opt-letter">B</div>
+      <div>Check your safety, note last-seen points for both victims, then switch to search mode</div>
+    </button>
+    <button class="opt-btn" onclick="Game.decide('response','c')" id="opt-response-c">
+      <div class="opt-letter">C</div>
+      <div>Call 911 before doing anything else</div>
+    </button>
+    <button class="opt-btn" onclick="Game.decide('response','d')" id="opt-response-d">
+      <div class="opt-letter">D</div>
+      <div>Ski down to the nearest road to get help</div>
+    </button>
+  </div>
+  <div class="feedback-panel" id="fb-response"></div>
+  <div class="btn-wrap" id="next-response" style="display:none">
+    <button class="btn-primary" onclick="Game.goTo('help')">NEXT: CALL FOR HELP →</button>
+  </div>
+  <div class="scene-scroll-pad"></div>
+</div>
+
+<!-- ══ SCENE: DECISION 2 — CALL FOR HELP ════════════════════════════════════ -->
+<div id="scene-help" class="scene scene-decision">
+  <div class="decision-header">
+    <div class="decision-phase">Phase 1 · Organize</div>
+    <div class="decision-clock"><span class="clock-icon">⏱</span><span class="clock-text">Jordan and Alex have been buried ~90 seconds</span></div>
+    <div class="decision-q">You have 1 bar of cell service. How do you handle calling for help?</div>
+  </div>
+  <div class="decision-options" id="opts-help">
+    <button class="opt-btn" onclick="Game.decide('help','a')" id="opt-help-a">
+      <div class="opt-letter">A</div>
+      <div>Move to higher ground to get better signal before calling</div>
+    </button>
+    <button class="opt-btn" onclick="Game.decide('help','b')" id="opt-help-b">
+      <div class="opt-letter">B</div>
+      <div>Send a text with GPS coordinates, number buried, and time — then continue searching</div>
+    </button>
+    <button class="opt-btn" onclick="Game.decide('help','c')" id="opt-help-c">
+      <div class="opt-letter">C</div>
+      <div>Ignore calling — outside rescue takes too long to matter</div>
+    </button>
+    <button class="opt-btn" onclick="Game.decide('help','d')" id="opt-help-d">
+      <div class="opt-letter">D</div>
+      <div>Call dispatch and stay on the line while they guide you through the rescue</div>
+    </button>
+  </div>
+  <div class="feedback-panel" id="fb-help"></div>
+  <div class="btn-wrap" id="next-help" style="display:none">
+    <button class="btn-primary" onclick="Game.goTo('beacon')">START BEACON SEARCH →</button>
+  </div>
+  <div class="scene-scroll-pad"></div>
+</div>
+
+<!-- ══ SCENE: BEACON SEARCH ══════════════════════════════════════════════════ -->
+<div id="scene-beacon" class="scene">
+  <div class="beacon-header">
+    <div class="beacon-phase-label">Phase 2 · Beacon Search</div>
+    <div id="beacon-instruction" class="beacon-instruction">Tap the terrain to move. Follow the signal to find Jordan.</div>
+  </div>
+  <div class="beacon-hud">
+    <div class="bhud-card">
+      <div class="bhud-label">Distance</div>
+      <div class="bhud-val" id="bhud-dist">--</div>
+    </div>
+    <div class="bhud-card" style="display:flex;flex-direction:column;align-items:center;justify-content:center">
+      <div class="bhud-label">Direction</div>
+      <div class="beacon-compass" style="margin-top:2px">
+        <div class="beacon-compass-ring"></div>
+        <svg id="beacon-arrow-svg" width="28" height="28" viewBox="0 0 28 28">
+          <polygon points="14,3 20,22 14,18 8,22" fill="#5bc8f5" opacity="0.9"/>
+          <polygon points="14,25 20,6 14,10 8,6" fill="#2a3a4a" opacity="0.5"/>
+        </svg>
+      </div>
+    </div>
+    <div class="bhud-card">
+      <div class="bhud-label">Probes</div>
+      <div class="bhud-val" id="bhud-probes">0</div>
+    </div>
+  </div>
+  <div class="beacon-canvas-wrap">
+    <canvas id="beacon-canvas" width="380" height="380"></canvas>
+  </div>
+  <div class="beacon-arrow-wrap">
+    <div style="font-size:11px;color:var(--c-muted);text-align:center;max-width:280px;line-height:1.5">
+      Signal strength: <span id="beacon-signal-text">--</span>
+    </div>
+    <div class="beacon-signal-bar">
+      <div class="beacon-signal-fill" id="beacon-signal-fill" style="width:0%"></div>
+    </div>
+  </div>
+  <div class="scene-scroll-pad"></div>
+</div>
+
+<!-- ══ SCENE: PROBE ══════════════════════════════════════════════════════════ -->
+<div id="scene-probe" class="scene">
+  <div class="probe-header">
+    <div class="probe-phase">Phase 3 · Probe Strike</div>
+    <div class="probe-q">Beacon reads &lt;1m. Pinpoint Jordan's exact location with your probe.</div>
+    <div class="probe-sub">Tap each grid square to probe — 25cm spacing. Find the strike.</div>
+    <div class="probe-attempts" id="probe-attempts-text">Probes used: 0 of 9</div>
+  </div>
+  <div class="probe-grid-wrap">
+    <div class="probe-visual">
+      <div class="probe-snow-texture"></div>
+      <div class="probe-grid" id="probe-grid"></div>
+    </div>
+    <div id="probe-result" style="text-align:center;font-size:14px;color:var(--c-muted);display:none"></div>
+  </div>
+  <div class="btn-wrap" id="next-probe" style="display:none">
+    <button class="btn-primary" onclick="Game.goTo('shovel')">START SHOVELING →</button>
+  </div>
+  <div class="scene-scroll-pad"></div>
+</div>
+
+<!-- ══ SCENE: SHOVEL ════════════════════════════════════════════════════════ -->
+<div id="scene-shovel" class="scene scene-decision">
+  <div class="decision-header">
+    <div class="decision-phase">Phase 4 · Strategic Shoveling</div>
+    <div class="decision-clock"><span class="clock-icon">⏱</span><span class="clock-text" id="shovel-time-text">Jordan has been buried for some time</span></div>
+    <div class="decision-q">Probe strike confirmed at <strong id="shovel-depth">1.4m</strong> depth. Two of you are shoveling. What's your approach?</div>
+  </div>
+  <div class="technique-cards">
+    <div class="technique-card" onclick="Game.decide('shovel','a')" id="tech-a">
+      <div class="technique-diagram">
+        <svg viewBox="0 0 56 56" fill="none">
+          <rect x="4" y="4" width="48" height="48" rx="4" fill="#1a2535"/>
+          <!-- Direct dig: straight arrow down -->
+          <rect x="24" y="6" width="8" height="30" fill="#e84040" rx="2" opacity="0.7"/>
+          <polygon points="28,42 20,30 36,30" fill="#e84040" opacity="0.9"/>
+          <circle cx="28" cy="48" r="5" fill="#5bc8f5" opacity="0.6"/>
+        </svg>
+      </div>
+      <div class="technique-info">
+        <div class="technique-name">Direct Dig</div>
+        <div class="technique-desc">Dig straight down from the probe mark — fastest direct path to Jordan.</div>
+      </div>
+    </div>
+    <div class="technique-card" onclick="Game.decide('shovel','b')" id="tech-b">
+      <div class="technique-diagram">
+        <svg viewBox="0 0 56 56" fill="none">
+          <rect x="4" y="4" width="48" height="48" rx="4" fill="#1a2535"/>
+          <!-- V-Conveyor: V shape approach -->
+          <line x1="28" y1="8" x2="14" y2="38" stroke="#3dca72" stroke-width="3" stroke-linecap="round"/>
+          <line x1="28" y1="8" x2="42" y2="38" stroke="#3dca72" stroke-width="3" stroke-linecap="round"/>
+          <line x1="14" y1="38" x2="42" y2="38" stroke="#3dca72" stroke-width="2" stroke-dasharray="3,2" opacity="0.6"/>
+          <circle cx="28" cy="48" r="5" fill="#5bc8f5" opacity="0.6"/>
+          <polygon points="28,42 24,34 32,34" fill="#3dca72"/>
+        </svg>
+      </div>
+      <div class="technique-info">
+        <div class="technique-name">V-Conveyor Method</div>
+        <div class="technique-desc">Start 1.5× burial depth away, dig toward victim in V-formation — shovelers rotate front to back.</div>
+      </div>
+    </div>
+    <div class="technique-card" onclick="Game.decide('shovel','c')" id="tech-c">
+      <div class="technique-diagram">
+        <svg viewBox="0 0 56 56" fill="none">
+          <rect x="4" y="4" width="48" height="48" rx="4" fill="#1a2535"/>
+          <!-- Tunnel: horizontal approach -->
+          <line x1="6" y1="28" x2="36" y2="28" stroke="#f5a623" stroke-width="3" stroke-linecap="round"/>
+          <polygon points="42,28 32,22 32,34" fill="#f5a623"/>
+          <circle cx="48" cy="28" r="5" fill="#5bc8f5" opacity="0.6"/>
+          <line x1="6" y1="22" x2="6" y2="34" stroke="#f5a623" stroke-width="2" stroke-dasharray="3,2" opacity="0.5"/>
+        </svg>
+      </div>
+      <div class="technique-info">
+        <div class="technique-name">Lateral Tunnel</div>
+        <div class="technique-desc">Tunnel horizontally from the side of the debris field to reach Jordan.</div>
+      </div>
+    </div>
+    <div class="technique-card" onclick="Game.decide('shovel','d')" id="tech-d">
+      <div class="technique-diagram">
+        <svg viewBox="0 0 56 56" fill="none">
+          <rect x="4" y="4" width="48" height="48" rx="4" fill="#1a2535"/>
+          <!-- Split: two arrows from different sides -->
+          <line x1="10" y1="10" x2="26" y2="36" stroke="#e84040" stroke-width="2.5" stroke-linecap="round" opacity="0.8"/>
+          <line x1="46" y1="10" x2="30" y2="36" stroke="#e84040" stroke-width="2.5" stroke-linecap="round" opacity="0.8"/>
+          <circle cx="28" cy="42" r="5" fill="#5bc8f5" opacity="0.6"/>
+        </svg>
+      </div>
+      <div class="technique-info">
+        <div class="technique-name">Split Approach</div>
+        <div class="technique-desc">Dig from multiple angles simultaneously to reach Jordan faster.</div>
+      </div>
+    </div>
+  </div>
+  <div class="feedback-panel" id="fb-shovel"></div>
+  <div class="btn-wrap" id="next-shovel" style="display:none">
+    <button class="btn-primary" onclick="Game.goTo('care')">PATIENT EXTRACTED →</button>
+  </div>
+  <div class="scene-scroll-pad"></div>
+</div>
+
+<!-- ══ SCENE: PATIENT CARE ═══════════════════════════════════════════════════ -->
+<div id="scene-care" class="scene scene-decision">
+  <div class="decision-header">
+    <div class="decision-phase">Phase 5 · Patient Care</div>
+    <div class="decision-clock"><span class="clock-icon">⏱</span><span id="care-time-text" class="clock-text">Jordan has been buried for some time</span></div>
+    <div class="decision-q">You've uncovered Jordan's face. Jordan is not moving. What do you do first?</div>
+  </div>
+  <div class="care-vitals">
+    <div class="vital-item">
+      <div class="vital-label">Responsiveness</div>
+      <div class="vital-val abnormal">Unresponsive</div>
+    </div>
+    <div class="vital-item">
+      <div class="vital-label">Airway</div>
+      <div class="vital-val abnormal">Unknown</div>
+    </div>
+    <div class="vital-item">
+      <div class="vital-label">Skin Color</div>
+      <div class="vital-val abnormal">Pale/Blue</div>
+    </div>
+    <div class="vital-item">
+      <div class="vital-label">Temp</div>
+      <div class="vital-val abnormal">Hypothermic</div>
+    </div>
+  </div>
+  <div class="decision-options" id="opts-care">
+    <button class="opt-btn" onclick="Game.decide('care','a')" id="opt-care-a">
+      <div class="opt-letter">A</div>
+      <div>Pull Jordan fully out of the snow as quickly as possible</div>
+    </button>
+    <button class="opt-btn" onclick="Game.decide('care','b')" id="opt-care-b">
+      <div class="opt-letter">B</div>
+      <div>Check responsiveness, clear airway of snow and ice, assess breathing</div>
+    </button>
+    <button class="opt-btn" onclick="Game.decide('care','c')" id="opt-care-c">
+      <div class="opt-letter">C</div>
+      <div>Begin CPR immediately — Jordan isn't moving</div>
+    </button>
+    <button class="opt-btn" onclick="Game.decide('care','d')" id="opt-care-d">
+      <div class="opt-letter">D</div>
+      <div>Check for pulse first to determine if CPR is needed</div>
+    </button>
+  </div>
+  <div class="feedback-panel" id="fb-care"></div>
+  <div class="btn-wrap" id="next-care" style="display:none">
+    <button class="btn-primary" onclick="Game.goTo('debrief')">VIEW DEBRIEF →</button>
+  </div>
+  <div class="scene-scroll-pad"></div>
+</div>
+
+<!-- ══ SCENE: DEBRIEF ════════════════════════════════════════════════════════ -->
+<div id="scene-debrief" class="scene">
+  <div class="debrief-header">
+    <div id="debrief-outcome-label" class="debrief-outcome good">RESCUE COMPLETE</div>
+    <div id="debrief-sub" class="debrief-sub">Loading results…</div>
+  </div>
+  <div class="debrief-chart-wrap">
+    <div class="debrief-chart-label">Survival Probability vs. Burial Time</div>
+    <canvas id="debrief-canvas" height="140"></canvas>
+  </div>
+  <div class="debrief-stats" id="debrief-stats">
+    <div class="dstat"><div class="dstat-val" id="ds-time">--:--</div><div class="dstat-lbl">Burial Time</div></div>
+    <div class="dstat"><div class="dstat-val" id="ds-surv">--%</div><div class="dstat-lbl">Survival Odds</div></div>
+    <div class="dstat"><div class="dstat-val" id="ds-score">0</div><div class="dstat-lbl">Score</div></div>
+    <div class="dstat"><div class="dstat-val" id="ds-grade">--</div><div class="dstat-lbl">Grade</div></div>
+  </div>
+  <div class="debrief-decisions" id="debrief-decisions"></div>
+  <div class="debrief-key-learning" id="debrief-learnings">
+    <div class="dkl-label">Key Takeaways</div>
+  </div>
+  <div class="btn-wrap" style="padding-top:16px">
+    <button class="btn-primary" onclick="Game.restart()">RUN AGAIN</button>
+    <button class="btn-primary secondary" onclick="Game.shareScore()">SHARE RESULT</button>
+  </div>
+  <div class="scene-scroll-pad"></div>
+</div>
+
+</div><!-- #app -->
+
+<script>
+/* ════════════════════════════════════════════════════════════════════════════
+   AVALANCHE RESCUE SIMULATOR — Game Engine
+   ════════════════════════════════════════════════════════════════════════════ */
+(function() {
+'use strict';
+
+// ── AUDIO ENGINE ────────────────────────────────────────────────────────────
+const Audio = (() => {
+  let ctx = null;
+  let beaconTimer = null;
+  let beaconDist = 99;
+
+  function init() {
+    if (ctx) return;
+    ctx = new (window.AudioContext || window.webkitAudioContext)();
+  }
+
+  function beep(freq, dur, vol=0.25, type='square') {
+    if (!ctx) return;
+    try {
+      const osc  = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.type = type;
+      osc.frequency.value = freq;
+      gain.gain.setValueAtTime(0, ctx.currentTime);
+      gain.gain.linearRampToValueAtTime(vol, ctx.currentTime + 0.006);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + dur);
+      osc.start(ctx.currentTime);
+      osc.stop(ctx.currentTime + dur + 0.01);
+    } catch(e){}
+  }
+
+  function success() {
+    beep(523, 0.08); setTimeout(()=>beep(659,0.08),90); setTimeout(()=>beep(784,0.18),180);
+  }
+  function partial() {
+    beep(440, 0.08); setTimeout(()=>beep(523,0.12),80);
+  }
+  function error() {
+    beep(180, 0.3, 0.2, 'sawtooth');
+  }
+  function probeHit() {
+    beep(660,0.05); setTimeout(()=>beep(880,0.15),50);
+  }
+  function probeMiss() {
+    beep(220, 0.12, 0.15, 'sawtooth');
+  }
+  function tick() {
+    beep(800, 0.04, 0.15);
+  }
+
+  function startBeacon(dist) {
+    beaconDist = dist;
+    stopBeacon();
+    const interval = Math.max(80, Math.min(1400, 80 + dist * 50));
+    beep(2200 - dist * 40, 0.06, 0.2);
+    beaconTimer = setTimeout(function fire() {
+      beep(2200 - beaconDist * 40, 0.06, 0.2);
+      beaconTimer = setTimeout(fire, Math.max(80, Math.min(1400, 80 + beaconDist * 50)));
+    }, interval);
+  }
+  function updateBeacon(dist) { beaconDist = dist; }
+  function stopBeacon() { if(beaconTimer) clearTimeout(beaconTimer); beaconTimer=null; }
+
+  return { init, beep, success, partial, error, probeHit, probeMiss, tick, startBeacon, updateBeacon, stopBeacon };
+})();
+
+// ── SURVIVAL PROBABILITY ─────────────────────────────────────────────────────
+function survivalPct(secs) {
+  const t = secs / 60;
+  if (t <= 1)  return 93;
+  if (t <= 15) return Math.round(93 - 0.1 * t);
+  if (t <= 35) return Math.round(91.5 * Math.exp(-0.08 * (t - 15)));
+  if (t <= 90) return Math.round(20  * Math.exp(-0.015 * (t - 35)));
+  return 2;
+}
+
+// ── GAME STATE ───────────────────────────────────────────────────────────────
+const State = {
+  scene:       'splash',
+  timerSecs:   0,
+  score:       0,
+  choices:     {},   // { 'response': {choice,pts,correct}, ... }
+  probeAttempts: 0,
+  beaconSteps: 0,
+  started:     false
+};
+
+let timerInterval = null;
+const TOTAL_STEPS = 7; // scenes after splash
+const SCENE_ORDER = ['splash','situation','response','help','beacon','probe','shovel','care','debrief'];
+
+// ── HUD ──────────────────────────────────────────────────────────────────────
+function updateHUD() {
+  const surv = survivalPct(State.timerSecs);
+  const m = String(Math.floor(State.timerSecs/60)).padStart(2,'0');
+  const s = String(State.timerSecs%60).padStart(2,'0');
+  document.getElementById('hud-timer-val').textContent  = `${m}:${s}`;
+  document.getElementById('hud-surv-val').textContent   = `${surv}%`;
+  document.getElementById('hud-score-val').textContent  = State.score;
+
+  const timerEl = document.getElementById('hud-timer');
+  timerEl.classList.toggle('critical', State.timerSecs > 900); // 15 min
+
+  const survEl = document.getElementById('hud-survival');
+  survEl.classList.remove('warn','critical');
+  if (surv < 30) survEl.classList.add('critical');
+  else if (surv < 60) survEl.classList.add('warn');
+
+  // progress bar
+  const idx = SCENE_ORDER.indexOf(State.scene);
+  const pct = Math.max(0, Math.min(100, ((idx-1) / (SCENE_ORDER.length-2)) * 100));
+  document.getElementById('progress-fill').style.width = pct + '%';
+}
+
+function startTimer() {
+  if (timerInterval) return;
+  timerInterval = setInterval(() => {
+    State.timerSecs++;
+    updateHUD();
+    if (State.timerSecs % 60 === 0) Audio.tick();
+  }, 1000);
+}
+function stopTimer() {
+  clearInterval(timerInterval);
+  timerInterval = null;
+}
+
+// ── SCENE MANAGEMENT ─────────────────────────────────────────────────────────
+function showScene(id) {
+  const prev = document.querySelector('.scene.active');
+  const next = document.getElementById('scene-' + id);
+  if (!next) return;
+  if (prev && prev !== next) {
+    prev.classList.add('exit');
+    prev.classList.remove('active');
+    setTimeout(() => prev.classList.remove('exit'), 350);
+  }
+  next.classList.add('active');
+  next.scrollTop = 0;
+  State.scene = id;
+
+  const hud = document.getElementById('hud');
+  const pb  = document.getElementById('progress-bar');
+  const showHUD = ['situation','response','help','beacon','probe','shovel','care'].includes(id);
+  hud.classList.toggle('visible', showHUD);
+  pb.style.display = showHUD ? 'block' : 'none';
+
+  updateHUD();
+}
+
+// ── SCORE POP ANIMATION ──────────────────────────────────────────────────────
+function showScorePop(pts, el) {
+  if (pts <= 0) return;
+  const pop = document.createElement('div');
+  pop.className = 'score-pop-el';
+  pop.textContent = '+' + pts;
+  if (el) {
+    const r = el.getBoundingClientRect();
+    pop.style.left = (r.left + r.width/2 - 20) + 'px';
+    pop.style.top  = (r.top + 4) + 'px';
+  } else {
+    pop.style.left = '50%'; pop.style.top = '120px';
+    pop.style.transform = 'translateX(-50%)';
+  }
+  document.body.appendChild(pop);
+  setTimeout(() => pop.remove(), 1100);
+}
+
+// ── DECISION DATA ────────────────────────────────────────────────────────────
+const DECISIONS = {
+  response: {
+    a: { pts:20,  correct:false, partial:true,  title:'Close — but incomplete',
+         text:'Your instinct is right, but skipped a critical step: confirm your own safety first. A third victim makes rescue harder for everyone. Also note last-seen points before memory fades.',
+         tip:'Protocol order: Safety check → Note last-seen points → Switch beacon to Search → Initiate outside rescue.' },
+    b: { pts:100, correct:true,  partial:false, title:'Correct — Optimal First Response',
+         text:'Perfect execution. You protected yourself from becoming a third victim, preserved last-seen location data, and are positioned to begin systematic search.',
+         tip:'The 3-second rule: Take 3 seconds to confirm YOU are safe before beginning rescue.' },
+    c: { pts:0,   correct:false, partial:false, title:'Critical Delay',
+         text:'In most avalanche terrain, cell service is unreliable. Outside help takes 30–90+ minutes. Companion rescue in the first 15 minutes is the only intervention that significantly changes survival odds.',
+         tip:'Initiate outside rescue — but never at the expense of companion search.' },
+    d: { pts:0,   correct:false, partial:false, title:'Fatal Decision',
+         text:'Abandoning the scene means Jordan and Alex will almost certainly die. The survival window is 15 minutes — far less time than it would take to reach help on foot.',
+         tip:'You are Jordan and Alex\'s only chance. Never leave buried victims.' }
+  },
+  help: {
+    a: { pts:0,   correct:false, partial:false, title:'Wasted Time',
+         text:'Moving away from the scene to improve signal wastes precious minutes. A text message on 1 bar is far more efficient than seeking better reception.',
+         tip:'SMS uses less bandwidth than voice calls and has a higher success rate on weak signals.' },
+    b: { pts:100, correct:true,  partial:false, title:'Smart Execution',
+         text:'Text messages route efficiently on weak signals. You\'ve activated the rescue chain without losing momentum on your primary task: the beacon search.',
+         tip:'Your text should include: location, number buried, time of burial, your phone number.' },
+    c: { pts:10,  correct:false, partial:true,  title:'Incomplete Protocol',
+         text:'While companion rescue is the priority, outside help provides critical care, evacuation support, and backup if your rescue exceeds 15 minutes. Always initiate the chain.',
+         tip:'Secondary burial, trauma injuries, and hypothermia all require professional medical response.' },
+    d: { pts:30,  correct:false, partial:true,  title:'Inefficient',
+         text:'You don\'t have bandwidth to manage a live call and conduct beacon search simultaneously. Get your information to dispatch, then hang up and focus.',
+         tip:'Dispatch needs: location, situation, callback number — that\'s it.' }
+  },
+  shovel: {
+    a: { pts:10,  correct:false, partial:true,  title:'Inefficient Technique',
+         text:'Digging straight down creates a deep, narrow shaft you can\'t remove snow from efficiently. You\'ll exhaust yourself within minutes and slow the rescue significantly.',
+         tip:'Direct approach is 2–3× slower than V-Conveyor and risks injury to shovelers.' },
+    b: { pts:100, correct:true,  partial:false, title:'Optimal — V-Conveyor',
+         text:'Starting 1.5× burial depth (about 2m) away and using a V-formation with rotating shovelers is the fastest proven technique. Research shows it extracts victims 2–3× faster.',
+         tip:'Rotate shovelers every 30–60 seconds: front shoveler passes snow back, rear shoveler clears it away.' },
+    c: { pts:0,   correct:false, partial:false, title:'Dangerous Technique',
+         text:'Horizontal tunneling creates serious collapse risk and is extremely difficult in unconsolidated avalanche debris. This method is never appropriate in companion rescue.',
+         tip:'Always dig from above using V-Conveyor. Lateral tunnels can trap or injure rescuers.' },
+    d: { pts:20,  correct:false, partial:true,  title:'Partially Effective',
+         text:'Multiple angles create efficiency problems — shovelers block each other and can\'t establish a clear snow-removal path. V-Conveyor from a single entry point is faster.',
+         tip:'Organized, rotating V-Conveyor beats ad-hoc multi-angle digging every time.' }
+  },
+  care: {
+    a: { pts:10,  correct:false, partial:true,  title:'Spinal Risk',
+         text:'Rapid extraction without spinal precautions risks worsening spinal injuries, which are common in avalanche trauma. Assess airway and breathing before moving the patient.',
+         tip:'Avalanche turbulence commonly causes spinal injuries. Stabilize before moving.' },
+    b: { pts:100, correct:true,  partial:false, title:'Correct — Airway First',
+         text:'Airway obstruction from snow and ice is the primary cause of avalanche asphyxiation. Clearing the airway and confirming breathing is the single most life-saving action you can take.',
+         tip:'A-B-C: Airway → Breathing → Circulation. In snow burial, A is everything.' },
+    c: { pts:20,  correct:false, partial:true,  title:'Premature CPR',
+         text:'Starting CPR before confirming no breathing may be unnecessary — and delays clearing the airway. Many buried victims who appear unresponsive resume breathing after airway clearance.',
+         tip:'Assess breathing first. Hypothermic patients may have a pulse too slow to feel — don\'t assume cardiac arrest.' },
+    d: { pts:30,  correct:false, partial:true,  title:'Wrong Priority Order',
+         text:'Pulse is difficult to detect in hypothermic patients and shouldn\'t be the first check. Open the airway first — if breathing resumes, circulation is already present.',
+         tip:'Airway assessment always precedes circulation assessment in trauma/hypothermia protocols.' }
+  }
+};
+
+// ── DECISION HANDLER ─────────────────────────────────────────────────────────
+window.Game = {};
+
+Game.decide = function(scene, choice) {
+  const data = DECISIONS[scene]?.[choice];
+  if (!data) return;
+  if (State.choices[scene]) return; // already answered
+
+  State.choices[scene] = { choice, pts: data.pts, correct: data.correct };
+  State.score += data.pts;
+  updateHUD();
+
+  // Disable all buttons
+  const opts = document.querySelectorAll(`#opts-${scene} .opt-btn`);
+  opts.forEach(b => b.disabled = true);
+
+  // Highlight selected option
+  const selBtn = document.getElementById(`opt-${scene}-${choice}`);
+  if (selBtn) {
+    selBtn.classList.add(data.correct ? 'correct' : data.partial ? 'partial' : 'wrong');
+  }
+
+  // Show feedback
+  const fb = document.getElementById(`fb-${scene}`);
+  if (fb) {
+    const cls = data.correct ? 'fb-correct' : data.partial ? 'fb-partial' : 'fb-wrong';
+    fb.className = `feedback-panel show ${cls}`;
+    fb.innerHTML = `
+      <div class="feedback-title">${data.correct ? '✓' : data.partial ? '⚡' : '✗'} ${data.title}</div>
+      <div class="feedback-text">${data.text}</div>
+      <div class="feedback-tip"><strong>Protocol:</strong> ${data.tip}</div>`;
+    fb.scrollIntoView({ behavior:'smooth', block:'nearest' });
+  }
+
+  // Show score pop
+  showScorePop(data.pts, selBtn);
+
+  // Audio
+  if (data.correct)      Audio.success();
+  else if (data.partial) Audio.partial();
+  else                   Audio.error();
+
+  // Haptic
+  if (navigator.vibrate) {
+    if (data.correct) navigator.vibrate([30,20,30]);
+    else if (data.partial) navigator.vibrate(40);
+    else navigator.vibrate([60,20,60,20,60]);
+  }
+
+  // Show next button (for decision scenes that have one)
+  const nextBtn = document.getElementById(`next-${scene}`);
+  if (nextBtn) {
+    setTimeout(() => { nextBtn.style.display = 'flex'; nextBtn.scrollIntoView({behavior:'smooth',block:'nearest'}); }, 600);
+  }
+  // Shovel uses technique cards
+  if (scene === 'shovel') {
+    setTimeout(() => {
+      document.querySelectorAll('.technique-card').forEach((c,i) => {
+        const k = ['a','b','c','d'][i];
+        c.classList.add(DECISIONS.shovel[k].correct ? 'correct' : 'wrong');
+        c.onclick = null;
+      });
+      const n = document.getElementById('next-shovel');
+      if (n) { n.style.display='flex'; n.scrollIntoView({behavior:'smooth',block:'nearest'}); }
+    }, 600);
+  }
+};
+
+// ── SCENE TRANSITIONS ────────────────────────────────────────────────────────
+Game.goTo = function(id) {
+  Audio.init();
+  showScene(id);
+  if (id === 'situation') { startTimer(); }
+  if (id === 'beacon')    { BeaconGame.init(); }
+  if (id === 'probe')     { ProbeGame.init(); }
+  if (id === 'shovel') {
+    const t = State.timerSecs;
+    document.getElementById('shovel-time-text').textContent =
+      `Jordan has been buried approximately ${formatTime(t)}`;
+    const depth = (1.0 + Math.random() * 0.8).toFixed(1);
+    document.getElementById('shovel-depth').textContent = depth + 'm';
+  }
+  if (id === 'care') {
+    document.getElementById('care-time-text').textContent =
+      `Jordan has been buried approximately ${formatTime(State.timerSecs)}`;
+  }
+  if (id === 'debrief') {
+    stopTimer();
+    Audio.stopBeacon();
+    setTimeout(Debrief.render, 200);
+  }
+};
+
+Game.start = function() {
+  Audio.init();
+  Game.goTo('situation');
+};
+
+Game.restart = function() {
+  stopTimer();
+  Audio.stopBeacon();
+  State.timerSecs = 0;
+  State.score = 0;
+  State.choices = {};
+  State.probeAttempts = 0;
+  State.beaconSteps = 0;
+  // Reset decision UIs
+  ['response','help','shovel','care'].forEach(sc => {
+    const opts = document.querySelectorAll(`#opts-${sc} .opt-btn`);
+    opts.forEach(b => { b.disabled = false; b.classList.remove('correct','wrong','partial'); });
+    const fb = document.getElementById(`fb-${sc}`);
+    if (fb) { fb.className = 'feedback-panel'; fb.innerHTML = ''; }
+    const nxt = document.getElementById(`next-${sc}`);
+    if (nxt) nxt.style.display = 'none';
+  });
+  document.querySelectorAll('.technique-card').forEach(c => {
+    c.classList.remove('correct','wrong');
+  });
+  showScene('splash');
+  document.getElementById('hud').classList.remove('visible');
+  document.getElementById('progress-bar').style.display = 'none';
+};
+
+Game.shareScore = function() {
+  const surv = survivalPct(State.timerSecs);
+  const text = `I completed the Avalanche Rescue Simulator in ${formatTime(State.timerSecs)} with a ${surv}% survival outcome. Score: ${State.score}/400. Can you beat it?`;
+  if (navigator.share) {
+    navigator.share({ title:'Avalanche Rescue Simulator', text }).catch(()=>{});
+  } else {
+    navigator.clipboard?.writeText(text).then(() => alert('Result copied to clipboard!'));
+  }
+};
+
+function formatTime(secs) {
+  const m = Math.floor(secs/60), s = secs%60;
+  if (m === 0) return `${s} seconds`;
+  return `${m} min ${s} sec`;
+}
+
+// ── BEACON MINI-GAME ─────────────────────────────────────────────────────────
+const BeaconGame = (() => {
+  const W = 380, H = 380; // canvas logical size in game-meters * scale
+  const SCALE = W / 25;   // 25 "meters" across canvas width
+  let canvas, ctx, animFrame;
+  let victim, player, target;
+  let trail = [];
+  let found = false;
+  let moveInterval = null;
+
+  function init() {
+    canvas = document.getElementById('beacon-canvas');
+    ctx    = canvas.getContext('2d');
+    // Resize canvas to actual display size
+    const dpr  = window.devicePixelRatio || 1;
+    const disp = canvas.getBoundingClientRect();
+    canvas.width  = disp.width  * dpr;
+    canvas.height = disp.height * dpr;
+    ctx.scale(dpr, dpr);
+    const cw = disp.width, ch = disp.height;
+
+    // Place victim at random position (meters)
+    victim = {
+      x: 5 + Math.random() * 15,
+      y: 8 + Math.random() * 10
+    };
+    player = { x: cw/SCALE/2, y: 1.5 };
+    target = { ...player };
+    trail  = [{ ...player }];
+    found  = false;
+
+    State.beaconSteps = 0;
+    document.getElementById('bhud-probes').textContent = '0';
+
+    canvas.onclick = canvas.ontouchend = null;
+    canvas.addEventListener('click', handleTap);
+    canvas.addEventListener('touchend', handleTouch, { passive:false });
+
+    Audio.startBeacon(dist());
+    document.getElementById('beacon-instruction').textContent =
+      'Tap on the terrain to move. Minimize the distance reading.';
+    cancelAnimationFrame(animFrame);
+    loop(cw, ch);
+  }
+
+  function dist() {
+    return Math.sqrt((player.x - victim.x)**2 + (player.y - victim.y)**2);
+  }
+  function angle() {
+    return Math.atan2(victim.y - player.y, victim.x - player.x);
+  }
+
+  function handleTap(e) {
+    if (found) return;
+    const r = canvas.getBoundingClientRect();
+    const mx = (e.clientX - r.left)  / r.width  * 25;
+    const my = (e.clientY - r.top)   / r.height * 25;
+    moveTo(mx, my);
+  }
+  function handleTouch(e) {
+    e.preventDefault();
+    if (found || !e.changedTouches.length) return;
+    const t = e.changedTouches[0];
+    const r = canvas.getBoundingClientRect();
+    const mx = (t.clientX - r.left) / r.width  * 25;
+    const my = (t.clientY - r.top)  / r.height * 25;
+    moveTo(mx, my);
+  }
+
+  function moveTo(mx, my) {
+    target = { x: Math.max(0.5, Math.min(24.5, mx)), y: Math.max(0.5, Math.min(24.5, my)) };
+  }
+
+  function updateHUDBeacon(cw, ch) {
+    const d = dist();
+    const distEl = document.getElementById('bhud-dist');
+    const displayDist = d < 0.5 ? '<1' : Math.round(d);
+    distEl.textContent = displayDist + 'm';
+    distEl.className = 'bhud-val' + (d < 3 ? (d < 1 ? ' close' : ' near') : '');
+
+    // Signal bar
+    const signalPct = Math.max(0, Math.min(100, 100 - d * 4));
+    document.getElementById('beacon-signal-fill').style.width = signalPct + '%';
+    document.getElementById('beacon-signal-text').textContent =
+      d < 1 ? 'Strong — probe ready!' : d < 5 ? 'Strong' : d < 12 ? 'Moderate' : 'Weak';
+
+    // Arrow
+    const a = angle() - Math.PI/2; // SVG arrow points up by default
+    document.getElementById('beacon-arrow-svg').style.transform = `rotate(${a * 180/Math.PI}deg)`;
+
+    Audio.updateBeacon(d);
+
+    // Phase labels
+    if (d < 1 && !found) {
+      document.getElementById('beacon-instruction').textContent =
+        '⚡ Beacon < 1m — switch to PROBE mode now!';
+    } else if (d < 3) {
+      document.getElementById('beacon-instruction').textContent =
+        'Fine search: grid pattern in this area. Getting close!';
+    } else if (d < 10) {
+      document.getElementById('beacon-instruction').textContent =
+        'Signal search: follow the flux line — minimize the reading.';
+    } else {
+      document.getElementById('beacon-instruction').textContent =
+        'Coarse search: move across the slope to acquire the signal.';
+    }
+
+    if (d < 0.7 && !found) {
+      found = true;
+      Audio.stopBeacon();
+      Audio.success();
+      if (navigator.vibrate) navigator.vibrate([50,30,50,30,100]);
+      State.score += 150; // beacon bonus
+      showScorePop(150);
+      updateHUD();
+      document.getElementById('bhud-dist').textContent = 'FOUND';
+      document.getElementById('bhud-dist').style.color = 'var(--c-ok)';
+      document.getElementById('beacon-instruction').textContent =
+        '✓ Signal locked. Move to PROBE phase.';
+      canvas.removeEventListener('click', handleTap);
+      canvas.removeEventListener('touchend', handleTouch);
+      setTimeout(() => Game.goTo('probe'), 1600);
+    }
+  }
+
+  const TREE_POSITIONS = [
+    [2.5,3],[3.2,5.5],[1.8,8],[22,4],[21,7],[23,10],
+    [4,22],[3,19],[22,21],[20,18]
+  ];
+
+  function loop(cw, ch) {
+    animFrame = requestAnimationFrame(() => loop(cw, ch));
+
+    // Smoothly move player toward target
+    const spd = 0.15;
+    const dx = target.x - player.x, dy = target.y - player.y;
+    const mag = Math.sqrt(dx*dx + dy*dy);
+    if (mag > 0.05) {
+      player.x += (dx/mag) * Math.min(spd, mag);
+      player.y += (dy/mag) * Math.min(spd, mag);
+      State.beaconSteps++;
+      // Add trail point every few frames
+      const last = trail[trail.length-1];
+      if (Math.sqrt((player.x-last.x)**2+(player.y-last.y)**2) > 0.4) {
+        trail.push({...player});
+        if (trail.length > 120) trail.shift();
+      }
+    }
+
+    const s = cw / 25; // pixels per meter
+    ctx.clearRect(0, 0, cw, ch);
+
+    // Background snow
+    const snowGrad = ctx.createLinearGradient(0,0,0,ch);
+    snowGrad.addColorStop(0, '#c8dff4');
+    snowGrad.addColorStop(1, '#e4f0fb');
+    ctx.fillStyle = snowGrad;
+    ctx.fillRect(0,0,cw,ch);
+
+    // Subtle snow texture
+    ctx.fillStyle = 'rgba(255,255,255,0.4)';
+    for (let gx=0; gx<cw; gx+=8) for(let gy=0; gy<ch; gy+=8)
+      if ((gx+gy)%16===0) ctx.fillRect(gx,gy,1,1);
+
+    // Debris field
+    const debGrad = ctx.createLinearGradient(0, 5*s, 0, ch);
+    debGrad.addColorStop(0, 'rgba(180,200,220,0.5)');
+    debGrad.addColorStop(1, 'rgba(200,215,230,0.3)');
+    ctx.beginPath();
+    ctx.moveTo(2*s, 5*s); ctx.lineTo(23*s, 5*s);
+    ctx.lineTo(24*s, ch); ctx.lineTo(1*s, ch); ctx.closePath();
+    ctx.fillStyle = debGrad;
+    ctx.fill();
+
+    // Debris cracks
+    ctx.strokeStyle = 'rgba(160,185,210,0.4)'; ctx.lineWidth = 0.5;
+    for (let i=0; i<8; i++) {
+      ctx.beginPath();
+      const sx = (2 + Math.sin(i*1.7)*2) * s, sy = (6 + i*2.2) * s;
+      ctx.moveTo(sx, sy); ctx.lineTo(sx + 3*s, sy + 1.5*s);
+      ctx.stroke();
+    }
+
+    // Trees
+    TREE_POSITIONS.forEach(([tx,ty]) => {
+      const px2 = tx*s, py2 = ty*s;
+      ctx.fillStyle = '#2a5a2a';
+      ctx.beginPath();
+      ctx.moveTo(px2, py2-s*0.8);
+      ctx.lineTo(px2-s*0.4, py2+s*0.2);
+      ctx.lineTo(px2+s*0.4, py2+s*0.2);
+      ctx.closePath(); ctx.fill();
+      ctx.fillStyle = '#1a3d1a';
+      ctx.beginPath();
+      ctx.moveTo(px2, py2-s*1.1);
+      ctx.lineTo(px2-s*0.3, py2-s*0.2);
+      ctx.lineTo(px2+s*0.3, py2-s*0.2);
+      ctx.closePath(); ctx.fill();
+    });
+
+    // Trail
+    if (trail.length > 1) {
+      ctx.beginPath();
+      ctx.moveTo(trail[0].x*s, trail[0].y*s);
+      trail.forEach(p => ctx.lineTo(p.x*s, p.y*s));
+      ctx.strokeStyle = 'rgba(0,160,255,0.35)';
+      ctx.lineWidth = 2; ctx.setLineDash([4,4]);
+      ctx.stroke(); ctx.setLineDash([]);
+    }
+
+    // Player start marker
+    ctx.fillStyle = 'rgba(91,200,245,0.25)';
+    ctx.beginPath(); ctx.arc(trail[0].x*s, trail[0].y*s, 6, 0, Math.PI*2); ctx.fill();
+
+    // Beacon signal ring when close
+    const d = dist();
+    if (d < 5) {
+      ctx.beginPath();
+      ctx.arc(player.x*s, player.y*s, (5-d)*s*0.2, 0, Math.PI*2);
+      ctx.strokeStyle = 'rgba(0,255,140,0.25)';
+      ctx.lineWidth = 2; ctx.stroke();
+    }
+
+    // Player
+    ctx.save();
+    ctx.translate(player.x*s, player.y*s);
+    // Outer glow
+    ctx.beginPath(); ctx.arc(0,0,12,0,Math.PI*2);
+    ctx.fillStyle = 'rgba(91,200,245,0.2)'; ctx.fill();
+    // Body
+    ctx.beginPath(); ctx.arc(0,0,8,0,Math.PI*2);
+    ctx.fillStyle = '#1a4a8a'; ctx.fill();
+    ctx.strokeStyle = '#5bc8f5'; ctx.lineWidth = 2; ctx.stroke();
+    // Direction indicator
+    const a = angle();
+    ctx.beginPath();
+    ctx.moveTo(Math.cos(a)*6, Math.sin(a)*6);
+    ctx.lineTo(Math.cos(a)*12, Math.sin(a)*12);
+    ctx.strokeStyle = found ? '#3dca72' : '#5bc8f5';
+    ctx.lineWidth = 2.5; ctx.stroke();
+    ctx.restore();
+
+    updateHUDBeacon(cw, ch);
+  }
+
+  return { init };
+})();
+
+// ── PROBE MINI-GAME ──────────────────────────────────────────────────────────
+const ProbeGame = (() => {
+  let victimCell, attempts;
+
+  function init() {
+    victimCell = Math.floor(Math.random() * 9);
+    attempts   = 0;
+    document.getElementById('probe-attempts-text').textContent = 'Probes used: 0 of 9';
+    document.getElementById('probe-result').style.display = 'none';
+    const nextBtn = document.getElementById('next-probe');
+    if (nextBtn) nextBtn.style.display = 'none';
+
+    const grid = document.getElementById('probe-grid');
+    grid.innerHTML = '';
+    for (let i=0; i<9; i++) {
+      const cell = document.createElement('div');
+      cell.className = 'probe-cell';
+      cell.dataset.idx = i;
+      cell.onclick = () => probeCell(i, cell);
+      grid.appendChild(cell);
+    }
+  }
+
+  function probeCell(idx, el) {
+    if (el.classList.contains('probed')) return;
+    attempts++;
+    el.classList.add('probed');
+    document.getElementById('probe-attempts-text').textContent = `Probes used: ${attempts} of 9`;
+
+    if (idx === victimCell) {
+      el.classList.add('hit');
+      el.textContent = '✓';
+      Audio.probeHit();
+      if (navigator.vibrate) navigator.vibrate(200);
+
+      // Score
+      const pts = attempts <= 3 ? 150 : attempts <= 6 ? 100 : 50;
+      State.score += pts;
+      showScorePop(pts, el);
+      updateHUD();
+
+      // Disable remaining
+      document.querySelectorAll('.probe-cell').forEach(c => c.onclick = null);
+
+      const res = document.getElementById('probe-result');
+      res.style.display = 'block';
+      const msg = attempts <= 3
+        ? '✓ Strike on first zone — excellent probe technique!'
+        : attempts <= 6
+        ? '⚡ Strike found — good systematic search.'
+        : '⚠ Found victim — consider tightening your probe spacing.';
+      res.textContent = msg;
+      res.style.color = attempts <= 3 ? 'var(--c-ok)' : attempts <= 6 ? 'var(--c-ice)' : 'var(--c-warn)';
+      State.probeAttempts = attempts;
+
+      const nextBtn = document.getElementById('next-probe');
+      if (nextBtn) {
+        nextBtn.style.display = 'flex';
+        setTimeout(() => nextBtn.scrollIntoView({behavior:'smooth',block:'nearest'}), 300);
+      }
+    } else {
+      el.classList.add('miss');
+      el.textContent = '✗';
+      Audio.probeMiss();
+      if (navigator.vibrate) navigator.vibrate([30,20,30]);
+
+      if (attempts >= 9) {
+        // Reveal victim
+        const cells = document.querySelectorAll('.probe-cell');
+        cells[victimCell].classList.remove('probed');
+        cells[victimCell].classList.add('hit');
+        cells[victimCell].textContent = '✓';
+        State.probeAttempts = attempts;
+        const nextBtn = document.getElementById('next-probe');
+        if (nextBtn) nextBtn.style.display = 'flex';
+      }
+    }
+  }
+
+  return { init };
+})();
+
+// ── DEBRIEF ──────────────────────────────────────────────────────────────────
+const Debrief = (() => {
+  function render() {
+    const t = State.timerSecs;
+    const surv = survivalPct(t);
+    const score = State.score;
+    const maxScore = 400 + 150 + 150; // decisions + beacon + probe
+    const pct = Math.round(score / maxScore * 100);
+
+    let grade, outcomeClass;
+    if (pct >= 85)      { grade = 'A'; outcomeClass = 'excellent'; }
+    else if (pct >= 70) { grade = 'B'; outcomeClass = 'good'; }
+    else if (pct >= 50) { grade = 'C'; outcomeClass = 'fair'; }
+    else                { grade = 'D'; outcomeClass = 'poor'; }
+
+    const outcomeLabels = {
+      excellent: 'OUTSTANDING RESCUE',
+      good:      'EFFECTIVE RESCUE',
+      fair:      'RESCUE COMPLETED',
+      poor:      'RESCUE INCOMPLETE'
+    };
+
+    document.getElementById('debrief-outcome-label').textContent = outcomeLabels[outcomeClass];
+    document.getElementById('debrief-outcome-label').className = `debrief-outcome ${outcomeClass}`;
+    document.getElementById('debrief-sub').textContent =
+      `Jordan's survival probability at rescue: ${surv}%`;
+
+    document.getElementById('ds-time').textContent  = `${Math.floor(t/60)}:${String(t%60).padStart(2,'0')}`;
+    document.getElementById('ds-surv').textContent  = `${surv}%`;
+    document.getElementById('ds-score').textContent = score;
+    document.getElementById('ds-grade').textContent = grade;
+
+    drawSurvivalChart(t, surv);
+    renderDecisions();
+    renderLearnings();
+  }
+
+  function drawSurvivalChart(burialSecs, surv) {
+    const canvas = document.getElementById('debrief-canvas');
+    const dpr = window.devicePixelRatio || 1;
+    const W = canvas.parentElement.offsetWidth - 40;
+    canvas.style.width = W + 'px';
+    canvas.width = W * dpr;
+    canvas.height = 140 * dpr;
+    const ctx = canvas.getContext('2d');
+    ctx.scale(dpr, dpr);
+    const w = W, h = 140;
+    const pad = { top:12, right:16, bottom:28, left:36 };
+    const cw = w - pad.left - pad.right;
+    const ch = h - pad.top  - pad.bottom;
+
+    const survGrad = ctx.createLinearGradient(pad.left, pad.top, pad.left+cw, pad.top);
+    survGrad.addColorStop(0,    'rgba(61,202,114,0.6)');
+    survGrad.addColorStop(0.17, 'rgba(61,202,114,0.5)');
+    survGrad.addColorStop(0.33, 'rgba(245,166,35,0.4)');
+    survGrad.addColorStop(0.5,  'rgba(232,64,64,0.35)');
+    survGrad.addColorStop(1,    'rgba(232,64,64,0.2)');
+
+    function drawFrame(prog) {
+      ctx.clearRect(0, 0, w, h);
+
+      // Background (rounded rect polyfill)
+      ctx.fillStyle = '#131b26';
+      ctx.beginPath();
+      const r = 6;
+      ctx.moveTo(r, 0); ctx.lineTo(w-r, 0); ctx.arcTo(w,0,w,r,r);
+      ctx.lineTo(w, h-r); ctx.arcTo(w,h,w-r,h,r);
+      ctx.lineTo(r, h); ctx.arcTo(0,h,0,h-r,r);
+      ctx.lineTo(0, r); ctx.arcTo(0,0,r,0,r);
+      ctx.closePath(); ctx.fill();
+
+      // Grid lines
+      ctx.strokeStyle = 'rgba(255,255,255,0.06)'; ctx.lineWidth = 1;
+      [0.25,0.5,0.75,1].forEach(f => {
+        ctx.beginPath();
+        ctx.moveTo(pad.left, pad.top + ch*(1-f));
+        ctx.lineTo(pad.left+cw, pad.top + ch*(1-f));
+        ctx.stroke();
+      });
+
+      // Y axis labels
+      ctx.fillStyle = '#5a7a96'; ctx.font = '9px Inter'; ctx.textAlign = 'right';
+      ['100%','75%','50%','25%','0%'].forEach((lbl,i) => {
+        ctx.fillText(lbl, pad.left-4, pad.top + (ch/4)*i + 3);
+      });
+
+      // X axis labels
+      ctx.textAlign = 'center';
+      [0,15,30,45,60,90].forEach(min => {
+        const x = pad.left + (min/90) * cw;
+        ctx.fillText(min+'m', x, h - pad.bottom + 12);
+      });
+
+      // Curve fill
+      ctx.beginPath();
+      ctx.moveTo(pad.left, pad.top + ch*(1 - survivalPct(0)/100));
+      for (let sec=0; sec <= 5400; sec+=30) {
+        ctx.lineTo(pad.left + (sec/5400)*cw, pad.top + ch*(1 - survivalPct(sec)/100));
+      }
+      ctx.lineTo(pad.left+cw, pad.top+ch);
+      ctx.lineTo(pad.left, pad.top+ch);
+      ctx.closePath(); ctx.fillStyle = survGrad; ctx.fill();
+
+      // Curve line
+      ctx.beginPath();
+      ctx.moveTo(pad.left, pad.top + ch*(1 - survivalPct(0)/100));
+      for (let sec=0; sec <= 5400; sec+=30) {
+        ctx.lineTo(pad.left + (sec/5400)*cw, pad.top + ch*(1 - survivalPct(sec)/100));
+      }
+      ctx.strokeStyle = 'rgba(255,255,255,0.5)'; ctx.lineWidth = 1.5; ctx.stroke();
+
+      // Animated vertical marker
+      const vx = pad.left + (Math.min(burialSecs, 5400) / 5400) * cw * prog;
+      ctx.strokeStyle = '#5bc8f5'; ctx.lineWidth = 2; ctx.setLineDash([4,3]);
+      ctx.beginPath(); ctx.moveTo(vx, pad.top); ctx.lineTo(vx, pad.top+ch); ctx.stroke();
+      ctx.setLineDash([]);
+
+      if (prog >= 1) {
+        // Final dot + label
+        const vy = pad.top + ch * (1 - surv/100);
+        ctx.beginPath(); ctx.arc(vx, vy, 5, 0, Math.PI*2);
+        ctx.fillStyle = '#5bc8f5'; ctx.fill();
+        ctx.strokeStyle = '#fff'; ctx.lineWidth = 1.5; ctx.stroke();
+        ctx.fillStyle = '#5bc8f5'; ctx.font = 'bold 11px Inter'; ctx.textAlign = 'left';
+        ctx.fillText(`${surv}% @ ${Math.floor(burialSecs/60)}m`, vx + 6, vy - 4);
+      }
+    }
+
+    let animProg = 0;
+    function animLine() {
+      animProg = Math.min(1, animProg + 0.03);
+      drawFrame(animProg);
+      if (animProg < 1) requestAnimationFrame(animLine);
+    }
+    requestAnimationFrame(animLine);
+  }
+
+  const PHASES = {
+    response: 'First Response',
+    help:     'Call for Help',
+    shovel:   'Shoveling',
+    care:     'Patient Care'
+  };
+
+  function renderDecisions() {
+    const container = document.getElementById('debrief-decisions');
+    container.innerHTML = '<div style="font-size:11px;letter-spacing:2px;color:var(--c-muted);text-transform:uppercase;margin-bottom:8px;padding:0 0 0 0">Decision Breakdown</div>';
+
+    Object.entries(State.choices).forEach(([key, val]) => {
+      const d = DECISIONS[key]?.[val.choice];
+      if (!d) return;
+      const row = document.createElement('div');
+      row.className = 'debrief-decision-row';
+      const icon = val.correct ? '✓' : d.partial ? '⚡' : '✗';
+      const cls  = val.correct ? 'ok' : d.partial ? 'warn' : 'bad';
+      row.innerHTML = `
+        <div class="ddr-icon">${icon}</div>
+        <div class="ddr-content">
+          <div class="ddr-phase">${PHASES[key] || key}</div>
+          <div class="ddr-result ${cls}">${d.title}</div>
+        </div>
+        <div class="ddr-pts">+${val.pts}</div>`;
+      container.appendChild(row);
+    });
+
+    // Add beacon and probe rows
+    if (State.score >= 150) {
+      const row = document.createElement('div');
+      row.className = 'debrief-decision-row';
+      row.innerHTML = `<div class="ddr-icon">✓</div><div class="ddr-content"><div class="ddr-phase">Beacon Search</div><div class="ddr-result ok">Victim located</div></div><div class="ddr-pts">+150</div>`;
+      container.appendChild(row);
+    }
+    const probeRow = document.createElement('div');
+    probeRow.className = 'debrief-decision-row';
+    const probePts = State.probeAttempts <= 3 ? 150 : State.probeAttempts <= 6 ? 100 : 50;
+    const probeClass = State.probeAttempts <= 3 ? 'ok' : State.probeAttempts <= 6 ? 'warn' : 'bad';
+    probeRow.innerHTML = `<div class="ddr-icon">⏎</div><div class="ddr-content"><div class="ddr-phase">Probe Strike</div><div class="ddr-result ${probeClass}">${State.probeAttempts} probe${State.probeAttempts!==1?'s':''} used</div></div><div class="ddr-pts">+${probePts}</div>`;
+    container.appendChild(probeRow);
+  }
+
+  function renderLearnings() {
+    const container = document.getElementById('debrief-learnings');
+    const learnings = [
+      'The 15-minute window is critical — survival drops sharply after 30 minutes.',
+      'V-Conveyor shoveling is 2–3× faster than direct burial approach.',
+      'Always clear airway before assessing circulation in avalanche burial.',
+      'Texts work better than voice calls on weak mountain signal.',
+      'Note last-seen points before they fade — they anchor the search.'
+    ];
+    container.innerHTML = '<div class="dkl-label">Key Takeaways</div>' +
+      learnings.map(l => `<div class="dkl-item">${l}</div>`).join('');
+  }
+
+  return { render };
+})();
+
+// ── INIT ─────────────────────────────────────────────────────────────────────
+document.getElementById('progress-bar').style.display = 'none';
+
+})(); // end IIFE
+</script>
+</body>
+</html>
