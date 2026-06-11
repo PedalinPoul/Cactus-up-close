@@ -5,27 +5,27 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="theme-color" content="#0a0e14">
-<title>Avalanche Rescue — Training Simulator</title>
+<meta name="theme-color" content="#11161c">
+<title>Companion Rescue Training Module — Avalanche Scenario</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=IBM+Plex+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
 /* ─── TOKENS ──────────────────────────────────────────────────────────────── */
 :root {
-  --c-bg:       #0a0e14;
-  --c-surf:     #131b26;
-  --c-surf2:    #1a2535;
-  --c-border:   #1e2d3d;
-  --c-snow:     #d6e8f8;
-  --c-ice:      #5bc8f5;
-  --c-ice-dim:  rgba(91,200,245,0.18);
-  --c-danger:   #e84040;
-  --c-warn:     #f5a623;
-  --c-ok:       #3dca72;
-  --c-text:     #c8ddf0;
-  --c-muted:    #5a7a96;
+  --c-bg:       #11161c;
+  --c-surf:     #181f27;
+  --c-surf2:    #202832;
+  --c-border:   #2b3540;
+  --c-snow:     #e6ebf0;
+  --c-ice:      #8fb6cf;
+  --c-ice-dim:  rgba(143,182,207,0.18);
+  --c-danger:   #c45252;
+  --c-warn:     #c79a4e;
+  --c-ok:       #6fa287;
+  --c-text:     #c2cad2;
+  --c-muted:    #76838f;
   --f-ui:       'Inter', system-ui, sans-serif;
-  --f-mono:     'Orbitron', 'Courier New', monospace;
+  --f-mono:     'IBM Plex Mono', 'Courier New', monospace;
   --r:          14px;
   --r-sm:       8px;
   --ease:       cubic-bezier(0.4,0,0.2,1);
@@ -52,9 +52,9 @@ html, body { height:100%; overflow:hidden; background:var(--c-bg); color:var(--c
 
 .hud-block { display:flex; flex-direction:column; align-items:center; gap:1px; min-width:64px; }
 .hud-label { font-size:8px; font-weight:700; letter-spacing:2px; color:var(--c-muted); text-transform:uppercase; }
-.hud-val { font-family:var(--f-mono); font-size:18px; font-weight:900; line-height:1; }
+.hud-val { font-family:var(--f-mono); font-size:18px; font-weight:700; line-height:1; }
 #hud-timer .hud-val { color:var(--c-snow); }
-#hud-timer.critical .hud-val { color:var(--c-danger); animation:blink 0.6s ease-in-out infinite; }
+#hud-timer.critical .hud-val { color:var(--c-danger); animation:blink 1.2s ease-in-out infinite; }
 #hud-score .hud-val { color:var(--c-ice); }
 #hud-survival .hud-val { color:var(--c-ok); transition:color 0.5s; }
 #hud-survival.warn .hud-val { color:var(--c-warn); }
@@ -104,9 +104,8 @@ html, body { height:100%; overflow:hidden; background:var(--c-bg); color:var(--c
   padding:4px 12px; border-radius:20px;
 }
 .splash-title {
-  font-family:var(--f-mono); font-size:clamp(28px,8vw,42px);
-  font-weight:900; line-height:1.1; color:var(--c-snow);
-  text-shadow: 0 0 40px rgba(91,200,245,0.4);
+  font-family:var(--f-mono); font-size:clamp(24px,7vw,36px);
+  font-weight:700; line-height:1.2; color:var(--c-snow);
 }
 .splash-title span { color:var(--c-ice); display:block; }
 .splash-subtitle { font-size:13px; color:var(--c-muted); letter-spacing:2px; text-transform:uppercase; }
@@ -115,7 +114,7 @@ html, body { height:100%; overflow:hidden; background:var(--c-bg); color:var(--c
 }
 .splash-stat { flex:1; padding:16px 8px; display:flex; flex-direction:column; align-items:center; gap:4px; }
 .splash-stat:first-child { border-right:1px solid var(--c-border); }
-.stat-num { font-family:var(--f-mono); font-size:28px; font-weight:900; color:var(--c-ice); }
+.stat-num { font-family:var(--f-mono); font-size:28px; font-weight:700; color:var(--c-ice); }
 .stat-lbl { font-size:11px; color:var(--c-muted); text-align:center; line-height:1.4; }
 .splash-disc { font-size:11px; color:var(--c-muted); line-height:1.6; max-width:300px; }
 
@@ -138,10 +137,10 @@ html, body { height:100%; overflow:hidden; background:var(--c-bg); color:var(--c
 }
 .situation-incident-badge {
   position:absolute; bottom:16px; left:50%; transform:translateX(-50%);
-  background:rgba(232,64,64,0.15); border:1px solid rgba(232,64,64,0.5);
+  background:rgba(196,82,82,0.12); border:1px solid rgba(196,82,82,0.45);
   color:var(--c-danger); font-size:11px; font-weight:700; letter-spacing:2px;
   padding:6px 16px; border-radius:20px; white-space:nowrap;
-  animation:pulse-border 1.5s ease-in-out infinite;
+  display:flex; align-items:center; gap:6px;
 }
 .situation-body { padding:0 20px 32px; display:flex; flex-direction:column; gap:20px; }
 .situation-meta {
@@ -256,7 +255,7 @@ html, body { height:100%; overflow:hidden; background:var(--c-bg); color:var(--c
   border-radius:var(--r-sm); padding:10px; text-align:center;
 }
 .bhud-label { font-size:8px; font-weight:700; letter-spacing:2px; color:var(--c-muted); text-transform:uppercase; margin-bottom:4px; }
-.bhud-val { font-family:var(--f-mono); font-size:20px; font-weight:900; color:var(--c-snow); line-height:1; }
+.bhud-val { font-family:var(--f-mono); font-size:20px; font-weight:700; color:var(--c-snow); line-height:1; }
 #bhud-dist { color:var(--c-ice); }
 #bhud-dist.close { color:var(--c-ok); }
 #bhud-dist.near  { color:var(--c-warn); }
@@ -375,7 +374,7 @@ html, body { height:100%; overflow:hidden; background:var(--c-bg); color:var(--c
 .vital-item { display:flex; flex-direction:column; gap:2px; }
 .vital-label { font-size:9px; font-weight:700; letter-spacing:2px; color:var(--c-muted); text-transform:uppercase; }
 .vital-val { font-family:var(--f-mono); font-size:16px; color:var(--c-snow); }
-.vital-val.abnormal { color:var(--c-danger); animation:blink 1s ease infinite; }
+.vital-val.abnormal { color:var(--c-danger); }
 
 /* ─── SCENE: DEBRIEF ─────────────────────────────────────────────────────── */
 #scene-debrief {
@@ -384,8 +383,8 @@ html, body { height:100%; overflow:hidden; background:var(--c-bg); color:var(--c
 }
 .debrief-header { padding:20px 20px 0; text-align:center; }
 .debrief-outcome {
-  font-family:var(--f-mono); font-size:28px; font-weight:900;
-  margin-bottom:4px;
+  font-family:var(--f-mono); font-size:22px; font-weight:700;
+  margin-bottom:4px; letter-spacing:2px; text-transform:uppercase;
 }
 .debrief-outcome.excellent { color:var(--c-ok); }
 .debrief-outcome.good      { color:var(--c-ice); }
@@ -399,7 +398,7 @@ html, body { height:100%; overflow:hidden; background:var(--c-bg); color:var(--c
 
 .debrief-stats { padding:0 20px; display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:16px; }
 .dstat { background:var(--c-surf); border:1px solid var(--c-border); border-radius:var(--r-sm); padding:12px; text-align:center; }
-.dstat-val { font-family:var(--f-mono); font-size:22px; font-weight:900; color:var(--c-ice); }
+.dstat-val { font-family:var(--f-mono); font-size:22px; font-weight:700; color:var(--c-ice); }
 .dstat-lbl { font-size:10px; color:var(--c-muted); margin-top:2px; text-transform:uppercase; letter-spacing:1px; }
 
 .debrief-decisions { padding:0 20px 8px; display:flex; flex-direction:column; gap:8px; }
@@ -419,19 +418,20 @@ html, body { height:100%; overflow:hidden; background:var(--c-bg); color:var(--c
 
 .debrief-key-learning {
   margin:0 20px 8px; padding:14px 16px;
-  background:rgba(91,200,245,0.06); border:1px solid rgba(91,200,245,0.2);
+  background:rgba(143,182,207,0.06); border:1px solid rgba(143,182,207,0.2);
   border-radius:var(--r);
 }
-.dkl-label { font-size:10px; font-weight:700; letter-spacing:2px; color:var(--c-ice); text-transform:uppercase; margin-bottom:8px; }
+.dkl-label { font-size:10px; font-weight:700; letter-spacing:2px; color:var(--c-ice); text-transform:uppercase; margin-bottom:4px; }
+.dkl-ref { font-size:10px; color:var(--c-muted); margin-bottom:10px; }
 .dkl-item { font-size:13px; color:var(--c-text); line-height:1.6; padding:4px 0; border-bottom:1px solid var(--c-border); }
 .dkl-item:last-child { border-bottom:none; padding-bottom:0; }
-.dkl-item::before { content:'→ '; color:var(--c-ice); font-weight:700; }
+.dkl-item::before { content:'– '; color:var(--c-muted); }
 
 /* ─── SHARED COMPONENTS ──────────────────────────────────────────────────── */
 .btn-primary {
-  background:var(--c-ice); color:#040c14; border:none;
-  font-family:var(--f-ui); font-size:15px; font-weight:800;
-  letter-spacing:1px; text-transform:uppercase;
+  background:var(--c-ice); color:#0a1018; border:none;
+  font-family:var(--f-ui); font-size:15px; font-weight:600;
+  letter-spacing:0.5px;
   padding:16px 32px; border-radius:var(--r);
   cursor:pointer; width:100%; max-width:360px;
   transition:opacity 0.15s, transform 0.1s;
@@ -468,27 +468,55 @@ html, body { height:100%; overflow:hidden; background:var(--c-bg); color:var(--c
   50%  { transform:scale(1.12); }
   100% { transform:scale(1); }
 }
-@keyframes score-pop {
-  0%   { opacity:0; transform:translateY(0) scale(0.7); }
-  30%  { opacity:1; transform:translateY(-20px) scale(1.2); }
-  100% { opacity:0; transform:translateY(-50px) scale(1); }
+@keyframes bump {
+  0%,100% { opacity:1; }
+  40%      { color:var(--c-snow); transform:scale(1.1); }
 }
+.hud-val.bump { animation:bump 0.4s var(--ease); }
 @keyframes beacon-ping {
   0%   { transform:scale(0.8); opacity:0.8; }
   100% { transform:scale(2.5); opacity:0; }
 }
-.score-pop-el {
-  position:fixed; pointer-events:none; z-index:200;
-  font-family:var(--f-mono); font-size:22px; font-weight:900; color:var(--c-ok);
-  text-shadow:0 2px 12px rgba(61,202,114,0.6);
-  animation:score-pop 1s var(--ease) forwards;
+/* Mute button */
+#mute-btn {
+  background:none; border:none; cursor:pointer; padding:6px;
+  color:var(--c-muted); display:flex; align-items:center; justify-content:center;
+  border-radius:var(--r-sm); transition:color 0.15s;
+  min-width:32px; min-height:32px;
 }
+#mute-btn:active { color:var(--c-snow); }
+#mute-btn[aria-pressed="true"] { color:var(--c-danger); }
+
+/* Film grain + vignette overlay */
+#app::after {
+  content:''; position:fixed; inset:0; pointer-events:none; z-index:1000;
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E"),
+    radial-gradient(ellipse at 50% 50%, transparent 55%, rgba(0,0,0,0.4) 100%);
+}
+
+/* Splash extras */
+.splash-module-line { font-size:9px; letter-spacing:2.5px; color:var(--c-muted); text-transform:uppercase; font-family:var(--f-mono); }
+.splash-objectives {
+  width:100%; background:var(--c-surf); border:1px solid var(--c-border);
+  border-radius:var(--r); padding:14px 16px; text-align:left;
+}
+.splash-obj-label { font-size:9px; font-weight:700; letter-spacing:2px; color:var(--c-ice); text-transform:uppercase; margin-bottom:8px; }
+.splash-obj-list { margin:0; padding-left:18px; display:flex; flex-direction:column; gap:6px; }
+.splash-obj-list li { font-size:12px; color:var(--c-text); line-height:1.5; }
+
+/* Victim icon SVG color */
+.victim-icon { flex-shrink:0; color:var(--c-muted); display:flex; align-items:center; }
+.victim-card.full .victim-icon { color:var(--c-danger); }
+
+/* Decision clock uses SVG */
+.decision-clock { color:var(--c-warn); }
 
 /* Safe area bottom pad for fixed buttons */
 .safe-bottom { padding-bottom: max(env(safe-area-inset-bottom,0px),16px) !important; }
 
 @media (min-width:600px) {
-  .splash-title { font-size:52px; }
+  .splash-title { font-size:40px; }
   #beacon-canvas { max-width:380px; max-height:380px; }
 }
 </style>
@@ -503,12 +531,17 @@ html, body { height:100%; overflow:hidden; background:var(--c-bg); color:var(--c
     <div id="hud-timer-val" class="hud-val">00:00</div>
   </div>
   <div id="hud-survival" class="hud-block">
-    <div class="hud-label">SURVIVAL</div>
+    <div class="hud-label">EST. SURVIVAL</div>
     <div id="hud-surv-val" class="hud-val">93%</div>
   </div>
   <div id="hud-score" class="hud-block">
-    <div class="hud-label">SCORE</div>
-    <div id="hud-score-val" class="hud-val">0</div>
+    <div class="hud-label">ADHERENCE</div>
+    <div id="hud-score-val" class="hud-val">0%</div>
+  </div>
+  <div class="hud-block">
+    <button id="mute-btn" aria-pressed="false" onclick="toggleMuteBtn()" aria-label="Toggle audio">
+      <span id="mute-icon"></span>
+    </button>
   </div>
 </div>
 <div id="progress-bar" class="progress-bar" style="position:fixed;top:max(env(safe-area-inset-top,0px),44px);left:0;right:0;z-index:99;">
@@ -517,24 +550,33 @@ html, body { height:100%; overflow:hidden; background:var(--c-bg); color:var(--c
 
 <!-- ══ SCENE: SPLASH ════════════════════════════════════════════════════════ -->
 <div id="scene-splash" class="scene active">
-  <div class="splash-stars"></div>
   <div class="splash-mountains"></div>
   <div class="splash-content">
-    <div class="splash-badge">AIARE Protocol · Scenario Training</div>
-    <h1 class="splash-title">AVALANCHE<span>RESCUE</span></h1>
-    <p class="splash-subtitle">Training Simulator</p>
+    <div class="splash-badge">COMPANION RESCUE TRAINING MODULE</div>
+    <div class="splash-module-line">MODULE 01 · SINGLE BURIAL — MULTIPLE SUBJECT SCENARIO</div>
+    <h1 class="splash-title">Avalanche<span>Companion Rescue</span></h1>
+    <p class="splash-subtitle">AIARE Companion Rescue Protocol · ICAR MEDCOM Guidelines</p>
+    <div class="splash-objectives">
+      <div class="splash-obj-label">Learning Objectives</div>
+      <ol class="splash-obj-list">
+        <li>Apply scene safety and organization at an avalanche burial site</li>
+        <li>Conduct a systematic transceiver signal and fine search</li>
+        <li>Execute probe confirmation and V-Conveyor excavation</li>
+        <li>Perform airway-first patient assessment on a buried subject</li>
+      </ol>
+    </div>
     <div class="splash-stats">
       <div class="splash-stat">
         <div class="stat-num">92%</div>
-        <div class="stat-lbl">Survival if rescued<br>within 15 minutes</div>
+        <div class="stat-lbl">Survival if extricated<br>within 15 minutes</div>
       </div>
       <div class="splash-stat">
         <div class="stat-num">30%</div>
         <div class="stat-lbl">Survival after<br>45 minutes buried</div>
       </div>
     </div>
-    <button class="btn-primary" onclick="Game.start()">BEGIN SIMULATION</button>
-    <p class="splash-disc">This simulator teaches the AIARE companion rescue protocol. It does not replace hands-on avalanche training. Always carry beacon, probe, and shovel in avalanche terrain.</p>
+    <button class="btn-primary" onclick="Game.start()">Begin Scenario</button>
+    <p class="splash-disc">This module presents the AIARE companion rescue protocol in a scenario-based format. It does not replace hands-on avalanche rescue training. Carry beacon, probe, and shovel in all avalanche terrain.</p>
   </div>
 </div>
 
@@ -543,7 +585,7 @@ html, body { height:100%; overflow:hidden; background:var(--c-bg); color:var(--c
   <div class="situation-hero">
     <div class="situation-hero-art"></div>
     <div class="situation-hero-overlay"></div>
-    <div class="situation-incident-badge">⚠ AVALANCHE INCIDENT</div>
+    <div class="situation-incident-badge"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><path d="M6 1L11.5 11H0.5z"/><line x1="6" y1="5" x2="6" y2="7.5" stroke-linecap="round"/><circle cx="6" cy="9.5" r="0.5" fill="currentColor" stroke="none"/></svg>AVALANCHE INVOLVEMENT — 2 SUBJECTS</div>
   </div>
   <div class="situation-body">
     <div class="situation-meta">
@@ -572,23 +614,23 @@ html, body { height:100%; overflow:hidden; background:var(--c-bg); color:var(--c
     </div>
     <div class="victims-list">
       <div class="victim-card partial">
-        <div class="victim-icon">🎿</div>
+        <div class="victim-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="12" cy="7" r="3"/><path d="M6 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/></svg></div>
         <div class="victim-info">
           <div class="victim-name">Alex</div>
-          <div class="victim-status">⚠ Partially visible — head above snow, not moving</div>
+          <div class="victim-status"><svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" style="display:inline;vertical-align:middle;margin-right:3px"><path d="M6 1L11.5 11H0.5z"/><line x1="6" y1="5" x2="6" y2="7.5" stroke-linecap="round"/><circle cx="6" cy="9.5" r="0.5" fill="currentColor" stroke="none"/></svg>Partially visible — head above snow, not moving</div>
         </div>
       </div>
       <div class="victim-card full">
-        <div class="victim-icon">🎿</div>
+        <div class="victim-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="12" cy="7" r="3"/><path d="M6 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/></svg></div>
         <div class="victim-info">
           <div class="victim-name">Jordan</div>
-          <div class="victim-status">● Fully buried — last seen in slide center</div>
+          <div class="victim-status">Fully buried — last seen in slide center</div>
         </div>
       </div>
     </div>
   </div>
   <div class="btn-wrap">
-    <button class="btn-primary" onclick="Game.goTo('response')">RESPOND TO INCIDENT →</button>
+    <button class="btn-primary" onclick="Game.goTo('response')">Initiate Response</button>
   </div>
   <div class="scene-scroll-pad"></div>
 </div>
@@ -596,8 +638,8 @@ html, body { height:100%; overflow:hidden; background:var(--c-bg); color:var(--c
 <!-- ══ SCENE: DECISION 1 — FIRST RESPONSE ═══════════════════════════════════ -->
 <div id="scene-response" class="scene scene-decision">
   <div class="decision-header">
-    <div class="decision-phase">Phase 1 · Organize</div>
-    <div class="decision-clock"><span class="clock-icon">⏱</span><span class="clock-text">Every second of burial reduces survival odds</span></div>
+    <div class="decision-phase">Scene Safety &amp; Organization</div>
+    <div class="decision-clock"><svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="7" cy="7" r="6"/><polyline points="7,3.5 7,7 9.5,9"/></svg><span class="clock-text">Every second of burial reduces survival probability</span></div>
     <div class="decision-q">The slide stops. You're safe at the debris edge. What do you do FIRST?</div>
   </div>
   <div class="decision-options" id="opts-response">
@@ -620,7 +662,7 @@ html, body { height:100%; overflow:hidden; background:var(--c-bg); color:var(--c
   </div>
   <div class="feedback-panel" id="fb-response"></div>
   <div class="btn-wrap" id="next-response" style="display:none">
-    <button class="btn-primary" onclick="Game.goTo('help')">NEXT: CALL FOR HELP →</button>
+    <button class="btn-primary" onclick="Game.goTo('help')">Continue: Signal Preparation</button>
   </div>
   <div class="scene-scroll-pad"></div>
 </div>
@@ -628,8 +670,8 @@ html, body { height:100%; overflow:hidden; background:var(--c-bg); color:var(--c
 <!-- ══ SCENE: DECISION 2 — CALL FOR HELP ════════════════════════════════════ -->
 <div id="scene-help" class="scene scene-decision">
   <div class="decision-header">
-    <div class="decision-phase">Phase 1 · Organize</div>
-    <div class="decision-clock"><span class="clock-icon">⏱</span><span class="clock-text">Jordan and Alex have been buried ~90 seconds</span></div>
+    <div class="decision-phase">Transceiver Signal Search</div>
+    <div class="decision-clock"><svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="7" cy="7" r="6"/><polyline points="7,3.5 7,7 9.5,9"/></svg><span class="clock-text">Jordan and Alex have been buried ~90 seconds</span></div>
     <div class="decision-q">You have 1 bar of cell service. How do you handle calling for help?</div>
   </div>
   <div class="decision-options" id="opts-help">
@@ -652,7 +694,7 @@ html, body { height:100%; overflow:hidden; background:var(--c-bg); color:var(--c
   </div>
   <div class="feedback-panel" id="fb-help"></div>
   <div class="btn-wrap" id="next-help" style="display:none">
-    <button class="btn-primary" onclick="Game.goTo('beacon')">START BEACON SEARCH →</button>
+    <button class="btn-primary" onclick="Game.goTo('beacon')">Begin Transceiver Search</button>
   </div>
   <div class="scene-scroll-pad"></div>
 </div>
@@ -660,8 +702,8 @@ html, body { height:100%; overflow:hidden; background:var(--c-bg); color:var(--c
 <!-- ══ SCENE: BEACON SEARCH ══════════════════════════════════════════════════ -->
 <div id="scene-beacon" class="scene">
   <div class="beacon-header">
-    <div class="beacon-phase-label">Phase 2 · Beacon Search</div>
-    <div id="beacon-instruction" class="beacon-instruction">Tap the terrain to move. Follow the signal to find Jordan.</div>
+    <div class="beacon-phase-label">Pinpoint &amp; Probe Confirmation</div>
+    <div id="beacon-instruction" class="beacon-instruction">Tap the terrain to move. Minimize the distance reading to locate Jordan.</div>
   </div>
   <div class="beacon-hud">
     <div class="bhud-card">
@@ -673,8 +715,8 @@ html, body { height:100%; overflow:hidden; background:var(--c-bg); color:var(--c
       <div class="beacon-compass" style="margin-top:2px">
         <div class="beacon-compass-ring"></div>
         <svg id="beacon-arrow-svg" width="28" height="28" viewBox="0 0 28 28">
-          <polygon points="14,3 20,22 14,18 8,22" fill="#5bc8f5" opacity="0.9"/>
-          <polygon points="14,25 20,6 14,10 8,6" fill="#2a3a4a" opacity="0.5"/>
+          <polygon points="14,3 20,22 14,18 8,22" fill="#8fb6cf" opacity="0.9"/>
+          <polygon points="14,25 20,6 14,10 8,6" fill="#2b3540" opacity="0.5"/>
         </svg>
       </div>
     </div>
@@ -700,7 +742,7 @@ html, body { height:100%; overflow:hidden; background:var(--c-bg); color:var(--c
 <!-- ══ SCENE: PROBE ══════════════════════════════════════════════════════════ -->
 <div id="scene-probe" class="scene">
   <div class="probe-header">
-    <div class="probe-phase">Phase 3 · Probe Strike</div>
+    <div class="probe-phase">Pinpoint &amp; Probe Confirmation</div>
     <div class="probe-q">Beacon reads &lt;1m. Pinpoint Jordan's exact location with your probe.</div>
     <div class="probe-sub">Tap each grid square to probe — 25cm spacing. Find the strike.</div>
     <div class="probe-attempts" id="probe-attempts-text">Probes used: 0 of 9</div>
@@ -713,7 +755,7 @@ html, body { height:100%; overflow:hidden; background:var(--c-bg); color:var(--c
     <div id="probe-result" style="text-align:center;font-size:14px;color:var(--c-muted);display:none"></div>
   </div>
   <div class="btn-wrap" id="next-probe" style="display:none">
-    <button class="btn-primary" onclick="Game.goTo('shovel')">START SHOVELING →</button>
+    <button class="btn-primary" onclick="Game.goTo('shovel')">Proceed to Excavation</button>
   </div>
   <div class="scene-scroll-pad"></div>
 </div>
@@ -721,8 +763,8 @@ html, body { height:100%; overflow:hidden; background:var(--c-bg); color:var(--c
 <!-- ══ SCENE: SHOVEL ════════════════════════════════════════════════════════ -->
 <div id="scene-shovel" class="scene scene-decision">
   <div class="decision-header">
-    <div class="decision-phase">Phase 4 · Strategic Shoveling</div>
-    <div class="decision-clock"><span class="clock-icon">⏱</span><span class="clock-text" id="shovel-time-text">Jordan has been buried for some time</span></div>
+    <div class="decision-phase">Strategic Excavation</div>
+    <div class="decision-clock"><svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="7" cy="7" r="6"/><polyline points="7,3.5 7,7 9.5,9"/></svg><span class="clock-text" id="shovel-time-text">Jordan has been buried for some time</span></div>
     <div class="decision-q">Probe strike confirmed at <strong id="shovel-depth">1.4m</strong> depth. Two of you are shoveling. What's your approach?</div>
   </div>
   <div class="technique-cards">
@@ -731,9 +773,9 @@ html, body { height:100%; overflow:hidden; background:var(--c-bg); color:var(--c
         <svg viewBox="0 0 56 56" fill="none">
           <rect x="4" y="4" width="48" height="48" rx="4" fill="#1a2535"/>
           <!-- Direct dig: straight arrow down -->
-          <rect x="24" y="6" width="8" height="30" fill="#e84040" rx="2" opacity="0.7"/>
-          <polygon points="28,42 20,30 36,30" fill="#e84040" opacity="0.9"/>
-          <circle cx="28" cy="48" r="5" fill="#5bc8f5" opacity="0.6"/>
+          <rect x="24" y="6" width="8" height="30" fill="#c45252" rx="2" opacity="0.7"/>
+          <polygon points="28,42 20,30 36,30" fill="#c45252" opacity="0.9"/>
+          <circle cx="28" cy="48" r="5" fill="#8fb6cf" opacity="0.6"/>
         </svg>
       </div>
       <div class="technique-info">
@@ -746,11 +788,11 @@ html, body { height:100%; overflow:hidden; background:var(--c-bg); color:var(--c
         <svg viewBox="0 0 56 56" fill="none">
           <rect x="4" y="4" width="48" height="48" rx="4" fill="#1a2535"/>
           <!-- V-Conveyor: V shape approach -->
-          <line x1="28" y1="8" x2="14" y2="38" stroke="#3dca72" stroke-width="3" stroke-linecap="round"/>
-          <line x1="28" y1="8" x2="42" y2="38" stroke="#3dca72" stroke-width="3" stroke-linecap="round"/>
-          <line x1="14" y1="38" x2="42" y2="38" stroke="#3dca72" stroke-width="2" stroke-dasharray="3,2" opacity="0.6"/>
-          <circle cx="28" cy="48" r="5" fill="#5bc8f5" opacity="0.6"/>
-          <polygon points="28,42 24,34 32,34" fill="#3dca72"/>
+          <line x1="28" y1="8" x2="14" y2="38" stroke="#6fa287" stroke-width="3" stroke-linecap="round"/>
+          <line x1="28" y1="8" x2="42" y2="38" stroke="#6fa287" stroke-width="3" stroke-linecap="round"/>
+          <line x1="14" y1="38" x2="42" y2="38" stroke="#6fa287" stroke-width="2" stroke-dasharray="3,2" opacity="0.6"/>
+          <circle cx="28" cy="48" r="5" fill="#8fb6cf" opacity="0.6"/>
+          <polygon points="28,42 24,34 32,34" fill="#6fa287"/>
         </svg>
       </div>
       <div class="technique-info">
@@ -763,10 +805,10 @@ html, body { height:100%; overflow:hidden; background:var(--c-bg); color:var(--c
         <svg viewBox="0 0 56 56" fill="none">
           <rect x="4" y="4" width="48" height="48" rx="4" fill="#1a2535"/>
           <!-- Tunnel: horizontal approach -->
-          <line x1="6" y1="28" x2="36" y2="28" stroke="#f5a623" stroke-width="3" stroke-linecap="round"/>
-          <polygon points="42,28 32,22 32,34" fill="#f5a623"/>
-          <circle cx="48" cy="28" r="5" fill="#5bc8f5" opacity="0.6"/>
-          <line x1="6" y1="22" x2="6" y2="34" stroke="#f5a623" stroke-width="2" stroke-dasharray="3,2" opacity="0.5"/>
+          <line x1="6" y1="28" x2="36" y2="28" stroke="#c79a4e" stroke-width="3" stroke-linecap="round"/>
+          <polygon points="42,28 32,22 32,34" fill="#c79a4e"/>
+          <circle cx="48" cy="28" r="5" fill="#8fb6cf" opacity="0.6"/>
+          <line x1="6" y1="22" x2="6" y2="34" stroke="#c79a4e" stroke-width="2" stroke-dasharray="3,2" opacity="0.5"/>
         </svg>
       </div>
       <div class="technique-info">
@@ -779,9 +821,9 @@ html, body { height:100%; overflow:hidden; background:var(--c-bg); color:var(--c
         <svg viewBox="0 0 56 56" fill="none">
           <rect x="4" y="4" width="48" height="48" rx="4" fill="#1a2535"/>
           <!-- Split: two arrows from different sides -->
-          <line x1="10" y1="10" x2="26" y2="36" stroke="#e84040" stroke-width="2.5" stroke-linecap="round" opacity="0.8"/>
-          <line x1="46" y1="10" x2="30" y2="36" stroke="#e84040" stroke-width="2.5" stroke-linecap="round" opacity="0.8"/>
-          <circle cx="28" cy="42" r="5" fill="#5bc8f5" opacity="0.6"/>
+          <line x1="10" y1="10" x2="26" y2="36" stroke="#c45252" stroke-width="2.5" stroke-linecap="round" opacity="0.8"/>
+          <line x1="46" y1="10" x2="30" y2="36" stroke="#c45252" stroke-width="2.5" stroke-linecap="round" opacity="0.8"/>
+          <circle cx="28" cy="42" r="5" fill="#8fb6cf" opacity="0.6"/>
         </svg>
       </div>
       <div class="technique-info">
@@ -792,7 +834,7 @@ html, body { height:100%; overflow:hidden; background:var(--c-bg); color:var(--c
   </div>
   <div class="feedback-panel" id="fb-shovel"></div>
   <div class="btn-wrap" id="next-shovel" style="display:none">
-    <button class="btn-primary" onclick="Game.goTo('care')">PATIENT EXTRACTED →</button>
+    <button class="btn-primary" onclick="Game.goTo('care')">Subject Extricated — Begin Assessment</button>
   </div>
   <div class="scene-scroll-pad"></div>
 </div>
@@ -800,8 +842,8 @@ html, body { height:100%; overflow:hidden; background:var(--c-bg); color:var(--c
 <!-- ══ SCENE: PATIENT CARE ═══════════════════════════════════════════════════ -->
 <div id="scene-care" class="scene scene-decision">
   <div class="decision-header">
-    <div class="decision-phase">Phase 5 · Patient Care</div>
-    <div class="decision-clock"><span class="clock-icon">⏱</span><span id="care-time-text" class="clock-text">Jordan has been buried for some time</span></div>
+    <div class="decision-phase">Patient Assessment &amp; Care</div>
+    <div class="decision-clock"><svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="7" cy="7" r="6"/><polyline points="7,3.5 7,7 9.5,9"/></svg><span id="care-time-text" class="clock-text">Jordan has been buried for some time</span></div>
     <div class="decision-q">You've uncovered Jordan's face. Jordan is not moving. What do you do first?</div>
   </div>
   <div class="care-vitals">
@@ -842,7 +884,7 @@ html, body { height:100%; overflow:hidden; background:var(--c-bg); color:var(--c
   </div>
   <div class="feedback-panel" id="fb-care"></div>
   <div class="btn-wrap" id="next-care" style="display:none">
-    <button class="btn-primary" onclick="Game.goTo('debrief')">VIEW DEBRIEF →</button>
+    <button class="btn-primary" onclick="Game.goTo('debrief')">Proceed to After-Action Review</button>
   </div>
   <div class="scene-scroll-pad"></div>
 </div>
@@ -850,26 +892,27 @@ html, body { height:100%; overflow:hidden; background:var(--c-bg); color:var(--c
 <!-- ══ SCENE: DEBRIEF ════════════════════════════════════════════════════════ -->
 <div id="scene-debrief" class="scene">
   <div class="debrief-header">
-    <div id="debrief-outcome-label" class="debrief-outcome good">RESCUE COMPLETE</div>
+    <div style="font-size:9px;font-weight:700;letter-spacing:3px;color:var(--c-muted);text-transform:uppercase;margin-bottom:6px">AFTER-ACTION REVIEW</div>
+    <div id="debrief-outcome-label" class="debrief-outcome good">MEETS STANDARD</div>
     <div id="debrief-sub" class="debrief-sub">Loading results…</div>
   </div>
   <div class="debrief-chart-wrap">
-    <div class="debrief-chart-label">Survival Probability vs. Burial Time</div>
+    <div class="debrief-chart-label">Survival Probability vs. Burial Time (Brugger et al.)</div>
     <canvas id="debrief-canvas" height="140"></canvas>
   </div>
   <div class="debrief-stats" id="debrief-stats">
-    <div class="dstat"><div class="dstat-val" id="ds-time">--:--</div><div class="dstat-lbl">Burial Time</div></div>
-    <div class="dstat"><div class="dstat-val" id="ds-surv">--%</div><div class="dstat-lbl">Survival Odds</div></div>
-    <div class="dstat"><div class="dstat-val" id="ds-score">0</div><div class="dstat-lbl">Score</div></div>
-    <div class="dstat"><div class="dstat-val" id="ds-grade">--</div><div class="dstat-lbl">Grade</div></div>
+    <div class="dstat"><div class="dstat-val" id="ds-time">--:--</div><div class="dstat-lbl">Time to Extrication</div></div>
+    <div class="dstat"><div class="dstat-val" id="ds-surv">--%</div><div class="dstat-lbl">Est. Survival Probability</div></div>
+    <div class="dstat"><div class="dstat-val" id="ds-score">--%</div><div class="dstat-lbl">Protocol Adherence</div></div>
+    <div class="dstat"><div class="dstat-val" id="ds-grade">--</div><div class="dstat-lbl">Performance Rating</div></div>
   </div>
   <div class="debrief-decisions" id="debrief-decisions"></div>
   <div class="debrief-key-learning" id="debrief-learnings">
     <div class="dkl-label">Key Takeaways</div>
   </div>
   <div class="btn-wrap" style="padding-top:16px">
-    <button class="btn-primary" onclick="Game.restart()">RUN AGAIN</button>
-    <button class="btn-primary secondary" onclick="Game.shareScore()">SHARE RESULT</button>
+    <button class="btn-primary" onclick="Game.restart()">Repeat Scenario</button>
+    <button class="btn-primary secondary" onclick="Game.shareScore()">Export Summary</button>
   </div>
   <div class="scene-scroll-pad"></div>
 </div>
@@ -885,66 +928,216 @@ html, body { height:100%; overflow:hidden; background:var(--c-bg); color:var(--c
 
 // ── AUDIO ENGINE ────────────────────────────────────────────────────────────
 const Audio = (() => {
-  let ctx = null;
-  let beaconTimer = null;
-  let beaconDist = 99;
+  let ctx = null, masterGain = null, muted = false;
+  let windSource = null, windFilter = null, windGain = null;
+  let windFreqLfo = null, windFreqLfoGain = null;
+  let windGainLfo = null, windGainLfoGain = null;
+  let pulseTimer = null;
+  let beaconTimer = null, beaconDist = 99;
 
   function init() {
-    if (ctx) return;
+    if (ctx) { ctx.resume(); return; }
     ctx = new (window.AudioContext || window.webkitAudioContext)();
+    masterGain = ctx.createGain();
+    masterGain.gain.value = 1;
+    masterGain.connect(ctx.destination);
+    ctx.resume();
   }
 
-  function beep(freq, dur, vol=0.25, type='square') {
-    if (!ctx) return;
+  function beep(freq, dur, vol=0.14, type='sine') {
+    if (!ctx || !masterGain) return;
     try {
-      const osc  = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-      osc.type = type;
-      osc.frequency.value = freq;
-      gain.gain.setValueAtTime(0, ctx.currentTime);
-      gain.gain.linearRampToValueAtTime(vol, ctx.currentTime + 0.006);
-      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + dur);
-      osc.start(ctx.currentTime);
-      osc.stop(ctx.currentTime + dur + 0.01);
+      const o = ctx.createOscillator(), g = ctx.createGain();
+      o.connect(g); g.connect(masterGain);
+      o.type = type; o.frequency.value = freq;
+      g.gain.setValueAtTime(0, ctx.currentTime);
+      g.gain.linearRampToValueAtTime(vol, ctx.currentTime + 0.006);
+      g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + dur);
+      o.start(); o.stop(ctx.currentTime + dur + 0.01);
     } catch(e){}
   }
 
-  function success() {
-    beep(523, 0.08); setTimeout(()=>beep(659,0.08),90); setTimeout(()=>beep(784,0.18),180);
-  }
-  function partial() {
-    beep(440, 0.08); setTimeout(()=>beep(523,0.12),80);
-  }
+  function success() { beep(330, 0.22, 0.13); }
+  function partial() { beep(262, 0.22, 0.11); }
   function error() {
-    beep(180, 0.3, 0.2, 'sawtooth');
-  }
-  function probeHit() {
-    beep(660,0.05); setTimeout(()=>beep(880,0.15),50);
-  }
-  function probeMiss() {
-    beep(220, 0.12, 0.15, 'sawtooth');
-  }
-  function tick() {
-    beep(800, 0.04, 0.15);
+    beep(98, 0.5, 0.16); setTimeout(() => beep(104, 0.5, 0.12), 30);
   }
 
+  function makeBrownNoise(seconds) {
+    const sr = ctx.sampleRate, len = sr * seconds;
+    const buf = ctx.createBuffer(1, len, sr);
+    const d = buf.getChannelData(0);
+    let last = 0;
+    for (let i = 0; i < len; i++) {
+      const w = Math.random() * 2 - 1;
+      d[i] = (last + 0.02 * w) / 1.02;
+      last = d[i]; d[i] *= 3.5;
+    }
+    return buf;
+  }
+
+  function startWind() {
+    if (!ctx || windSource) return;
+    if (ctx.state === 'suspended') ctx.resume();
+    const buf = makeBrownNoise(4);
+    windFilter = ctx.createBiquadFilter();
+    windFilter.type = 'lowpass'; windFilter.frequency.value = 400; windFilter.Q.value = 0.7;
+    windGain = ctx.createGain(); windGain.gain.value = 0.05;
+    windFreqLfo = ctx.createOscillator(); windFreqLfo.frequency.value = 0.07;
+    windFreqLfoGain = ctx.createGain(); windFreqLfoGain.gain.value = 180;
+    windFreqLfo.connect(windFreqLfoGain); windFreqLfoGain.connect(windFilter.frequency);
+    windGainLfo = ctx.createOscillator(); windGainLfo.frequency.value = 0.045;
+    windGainLfoGain = ctx.createGain(); windGainLfoGain.gain.value = 0.025;
+    windGainLfo.connect(windGainLfoGain); windGainLfoGain.connect(windGain.gain);
+    windSource = ctx.createBufferSource();
+    windSource.buffer = buf; windSource.loop = true;
+    windSource.connect(windFilter); windFilter.connect(windGain); windGain.connect(masterGain);
+    windFreqLfo.start(); windGainLfo.start(); windSource.start();
+  }
+
+  function stopWind() {
+    if (!windSource) return;
+    const src = windSource, wg = windGain, wfl = windFreqLfo, wgl = windGainLfo;
+    try { wg.gain.setTargetAtTime(0, ctx.currentTime, 0.8); } catch(e){}
+    setTimeout(() => {
+      try { src.stop(); } catch(e){}
+      try { wfl.stop(); } catch(e){}
+      try { wgl.stop(); } catch(e){}
+    }, 2400);
+    windSource = windFilter = windGain = null;
+    windFreqLfo = windFreqLfoGain = windGainLfo = windGainLfoGain = null;
+  }
+
+  function fireBeaconTone() {
+    if (!ctx || !masterGain) return;
+    try {
+      const vol = 0.10 + (1 - Math.min(beaconDist, 25) / 25) * 0.12;
+      const dur = 0.09;
+      const o1 = ctx.createOscillator(), g1 = ctx.createGain();
+      o1.connect(g1); g1.connect(masterGain); o1.frequency.value = 700;
+      g1.gain.setValueAtTime(0, ctx.currentTime);
+      g1.gain.linearRampToValueAtTime(vol, ctx.currentTime + 0.004);
+      g1.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + dur);
+      o1.start(); o1.stop(ctx.currentTime + dur + 0.01);
+      const o2 = ctx.createOscillator(), g2 = ctx.createGain();
+      o2.connect(g2); g2.connect(masterGain); o2.frequency.value = 1400;
+      g2.gain.setValueAtTime(0, ctx.currentTime);
+      g2.gain.linearRampToValueAtTime(vol * 0.25, ctx.currentTime + 0.004);
+      g2.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + dur);
+      o2.start(); o2.stop(ctx.currentTime + dur + 0.01);
+    } catch(e){}
+  }
+
+  function probeHit() {
+    if (!ctx || !masterGain) return;
+    try {
+      const o = ctx.createOscillator(), g = ctx.createGain();
+      o.connect(g); g.connect(masterGain);
+      o.frequency.setValueAtTime(90, ctx.currentTime);
+      o.frequency.linearRampToValueAtTime(60, ctx.currentTime + 0.12);
+      g.gain.setValueAtTime(0.18, ctx.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.18);
+      o.start(); o.stop(ctx.currentTime + 0.2);
+      const nb = ctx.createBuffer(1, ctx.sampleRate * 0.08, ctx.sampleRate);
+      const nd = nb.getChannelData(0);
+      for (let i = 0; i < nd.length; i++) nd[i] = Math.random() * 2 - 1;
+      const ns = ctx.createBufferSource(), lp = ctx.createBiquadFilter(), ng = ctx.createGain();
+      lp.type = 'lowpass'; lp.frequency.value = 300;
+      ns.buffer = nb; ns.connect(lp); lp.connect(ng); ng.connect(masterGain);
+      ng.gain.setValueAtTime(0.12, ctx.currentTime);
+      ng.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.12);
+      ns.start(); ns.stop(ctx.currentTime + 0.12);
+    } catch(e){}
+  }
+
+  function probeMiss() {
+    if (!ctx || !masterGain) return;
+    try {
+      const nb = ctx.createBuffer(1, ctx.sampleRate * 0.08, ctx.sampleRate);
+      const nd = nb.getChannelData(0);
+      for (let i = 0; i < nd.length; i++) nd[i] = Math.random() * 2 - 1;
+      const ns = ctx.createBufferSource(), bp = ctx.createBiquadFilter(), ng = ctx.createGain();
+      bp.type = 'bandpass'; bp.frequency.value = 2800; bp.Q.value = 1.5;
+      ns.buffer = nb; ns.connect(bp); bp.connect(ng); ng.connect(masterGain);
+      ng.gain.setValueAtTime(0.10, ctx.currentTime);
+      ng.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.1);
+      ns.start(); ns.stop(ctx.currentTime + 0.1);
+    } catch(e){}
+  }
+
+  function tick() { beep(700, 0.04, 0.07); }
+
   function startBeacon(dist) {
-    beaconDist = dist;
-    stopBeacon();
+    beaconDist = dist; stopBeacon();
     const interval = Math.max(80, Math.min(1400, 80 + dist * 50));
-    beep(2200 - dist * 40, 0.06, 0.2);
+    fireBeaconTone();
     beaconTimer = setTimeout(function fire() {
-      beep(2200 - beaconDist * 40, 0.06, 0.2);
+      fireBeaconTone();
       beaconTimer = setTimeout(fire, Math.max(80, Math.min(1400, 80 + beaconDist * 50)));
     }, interval);
   }
   function updateBeacon(dist) { beaconDist = dist; }
-  function stopBeacon() { if(beaconTimer) clearTimeout(beaconTimer); beaconTimer=null; }
+  function stopBeacon() { if (beaconTimer) clearTimeout(beaconTimer); beaconTimer = null; }
 
-  return { init, beep, success, partial, error, probeHit, probeMiss, tick, startBeacon, updateBeacon, stopBeacon };
+  function startPulse() {
+    if (pulseTimer) return;
+    function fire() {
+      if (!ctx || !masterGain) return;
+      try {
+        const o1 = ctx.createOscillator(), g1 = ctx.createGain();
+        o1.connect(g1); g1.connect(masterGain); o1.frequency.value = 55;
+        g1.gain.setValueAtTime(0, ctx.currentTime);
+        g1.gain.linearRampToValueAtTime(0.05, ctx.currentTime + 0.01);
+        g1.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.12);
+        o1.start(); o1.stop(ctx.currentTime + 0.14);
+        setTimeout(() => {
+          if (!ctx || !masterGain) return;
+          try {
+            const o2 = ctx.createOscillator(), g2 = ctx.createGain();
+            o2.connect(g2); g2.connect(masterGain); o2.frequency.value = 50;
+            g2.gain.setValueAtTime(0, ctx.currentTime);
+            g2.gain.linearRampToValueAtTime(0.03, ctx.currentTime + 0.01);
+            g2.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.10);
+            o2.start(); o2.stop(ctx.currentTime + 0.12);
+          } catch(e){}
+        }, 140);
+      } catch(e){}
+      pulseTimer = setTimeout(fire, 1300);
+    }
+    fire();
+  }
+  function stopPulse() { if (pulseTimer) { clearTimeout(pulseTimer); pulseTimer = null; } }
+
+  function toggleMute() {
+    if (!ctx) return false;
+    muted = !muted;
+    masterGain.gain.cancelScheduledValues(ctx.currentTime);
+    masterGain.gain.setTargetAtTime(muted ? 0 : 1, ctx.currentTime, 0.1);
+    return muted;
+  }
+  function isMuted() { return muted; }
+
+  return { init, beep, success, partial, error, probeHit, probeMiss, tick,
+           startBeacon, updateBeacon, stopBeacon,
+           startWind, stopWind, startPulse, stopPulse, toggleMute, isMuted };
 })();
+
+// ── ICONS ────────────────────────────────────────────────────────────────────
+const ICONS = {
+  check:   `<svg width="15" height="15" viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="2.5,7.5 6.5,11.5 12.5,3.5"/></svg>`,
+  cross:   `<svg width="15" height="15" viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="3" x2="12" y2="12"/><line x1="12" y1="3" x2="3" y2="12"/></svg>`,
+  partial: `<svg width="15" height="15" viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="7.5" x2="12" y2="7.5"/></svg>`,
+  speaker: `<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="3,5.5 6.5,5.5 10.5,2.5 10.5,13.5 6.5,10.5 3,10.5"/><path d="M12.5,5.5 Q14.5,8 12.5,10.5"/></svg>`,
+  speakerMuted: `<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="3,5.5 6.5,5.5 10.5,2.5 10.5,13.5 6.5,10.5 3,10.5"/><line x1="13" y1="6" x2="16" y2="9"/><line x1="16" y1="6" x2="13" y2="9"/></svg>`
+};
+
+window.toggleMuteBtn = function() {
+  Audio.toggleMute();
+  const btn = document.getElementById('mute-btn');
+  const icon = document.getElementById('mute-icon');
+  if (btn) btn.setAttribute('aria-pressed', Audio.isMuted());
+  if (icon) icon.innerHTML = Audio.isMuted() ? ICONS.speakerMuted : ICONS.speaker;
+};
 
 // ── SURVIVAL PROBABILITY ─────────────────────────────────────────────────────
 function survivalPct(secs) {
@@ -954,6 +1147,16 @@ function survivalPct(secs) {
   if (t <= 35) return Math.round(91.5 * Math.exp(-0.08 * (t - 15)));
   if (t <= 90) return Math.round(20  * Math.exp(-0.015 * (t - 35)));
   return 2;
+}
+
+// ── SCORING ──────────────────────────────────────────────────────────────────
+const MAX_SCORE = 700; // 4 decisions (100 ea) + beacon bonus (150) + probe bonus (150)
+
+function gradeFor(pct) {
+  if (pct >= 85) return { grade:'A', cls:'excellent', label:'EXCEEDS STANDARD' };
+  if (pct >= 70) return { grade:'B', cls:'good',      label:'MEETS STANDARD' };
+  if (pct >= 50) return { grade:'C', cls:'fair',      label:'BELOW STANDARD' };
+  return               { grade:'D', cls:'poor',       label:'REMEDIATION REQUIRED' };
 }
 
 // ── GAME STATE ───────────────────────────────────────────────────────────────
@@ -976,9 +1179,10 @@ function updateHUD() {
   const surv = survivalPct(State.timerSecs);
   const m = String(Math.floor(State.timerSecs/60)).padStart(2,'0');
   const s = String(State.timerSecs%60).padStart(2,'0');
+  const adherePct = Math.round(State.score / MAX_SCORE * 100);
   document.getElementById('hud-timer-val').textContent  = `${m}:${s}`;
   document.getElementById('hud-surv-val').textContent   = `${surv}%`;
-  document.getElementById('hud-score-val').textContent  = State.score;
+  document.getElementById('hud-score-val').textContent  = `${adherePct}%`;
 
   const timerEl = document.getElementById('hud-timer');
   timerEl.classList.toggle('critical', State.timerSecs > 900); // 15 min
@@ -1030,22 +1234,14 @@ function showScene(id) {
   updateHUD();
 }
 
-// ── SCORE POP ANIMATION ──────────────────────────────────────────────────────
-function showScorePop(pts, el) {
-  if (pts <= 0) return;
-  const pop = document.createElement('div');
-  pop.className = 'score-pop-el';
-  pop.textContent = '+' + pts;
-  if (el) {
-    const r = el.getBoundingClientRect();
-    pop.style.left = (r.left + r.width/2 - 20) + 'px';
-    pop.style.top  = (r.top + 4) + 'px';
-  } else {
-    pop.style.left = '50%'; pop.style.top = '120px';
-    pop.style.transform = 'translateX(-50%)';
-  }
-  document.body.appendChild(pop);
-  setTimeout(() => pop.remove(), 1100);
+// ── ADHERENCE BUMP ───────────────────────────────────────────────────────────
+function ackScore() {
+  const el = document.getElementById('hud-score-val');
+  if (!el) return;
+  el.classList.remove('bump');
+  void el.offsetWidth;
+  el.classList.add('bump');
+  el.addEventListener('animationend', () => el.classList.remove('bump'), { once: true });
 }
 
 // ── DECISION DATA ────────────────────────────────────────────────────────────
@@ -1054,13 +1250,13 @@ const DECISIONS = {
     a: { pts:20,  correct:false, partial:true,  title:'Close — but incomplete',
          text:'Your instinct is right, but skipped a critical step: confirm your own safety first. A third victim makes rescue harder for everyone. Also note last-seen points before memory fades.',
          tip:'Protocol order: Safety check → Note last-seen points → Switch beacon to Search → Initiate outside rescue.' },
-    b: { pts:100, correct:true,  partial:false, title:'Correct — Optimal First Response',
+    b: { pts:100, correct:true,  partial:false, title:'Correct — Protocol Compliant',
          text:'Perfect execution. You protected yourself from becoming a third victim, preserved last-seen location data, and are positioned to begin systematic search.',
          tip:'The 3-second rule: Take 3 seconds to confirm YOU are safe before beginning rescue.' },
     c: { pts:0,   correct:false, partial:false, title:'Critical Delay',
          text:'In most avalanche terrain, cell service is unreliable. Outside help takes 30–90+ minutes. Companion rescue in the first 15 minutes is the only intervention that significantly changes survival odds.',
          tip:'Initiate outside rescue — but never at the expense of companion search.' },
-    d: { pts:0,   correct:false, partial:false, title:'Fatal Decision',
+    d: { pts:0,   correct:false, partial:false, title:'Critical Protocol Failure',
          text:'Abandoning the scene means Jordan and Alex will almost certainly die. The survival window is 15 minutes — far less time than it would take to reach help on foot.',
          tip:'You are Jordan and Alex\'s only chance. Never leave buried victims.' }
   },
@@ -1068,7 +1264,7 @@ const DECISIONS = {
     a: { pts:0,   correct:false, partial:false, title:'Wasted Time',
          text:'Moving away from the scene to improve signal wastes precious minutes. A text message on 1 bar is far more efficient than seeking better reception.',
          tip:'SMS uses less bandwidth than voice calls and has a higher success rate on weak signals.' },
-    b: { pts:100, correct:true,  partial:false, title:'Smart Execution',
+    b: { pts:100, correct:true,  partial:false, title:'Correct — Protocol Compliant',
          text:'Text messages route efficiently on weak signals. You\'ve activated the rescue chain without losing momentum on your primary task: the beacon search.',
          tip:'Your text should include: location, number buried, time of burial, your phone number.' },
     c: { pts:10,  correct:false, partial:true,  title:'Incomplete Protocol',
@@ -1082,10 +1278,10 @@ const DECISIONS = {
     a: { pts:10,  correct:false, partial:true,  title:'Inefficient Technique',
          text:'Digging straight down creates a deep, narrow shaft you can\'t remove snow from efficiently. You\'ll exhaust yourself within minutes and slow the rescue significantly.',
          tip:'Direct approach is 2–3× slower than V-Conveyor and risks injury to shovelers.' },
-    b: { pts:100, correct:true,  partial:false, title:'Optimal — V-Conveyor',
+    b: { pts:100, correct:true,  partial:false, title:'Correct — V-Conveyor Protocol',
          text:'Starting 1.5× burial depth (about 2m) away and using a V-formation with rotating shovelers is the fastest proven technique. Research shows it extracts victims 2–3× faster.',
          tip:'Rotate shovelers every 30–60 seconds: front shoveler passes snow back, rear shoveler clears it away.' },
-    c: { pts:0,   correct:false, partial:false, title:'Dangerous Technique',
+    c: { pts:0,   correct:false, partial:false, title:'Critical Protocol Failure',
          text:'Horizontal tunneling creates serious collapse risk and is extremely difficult in unconsolidated avalanche debris. This method is never appropriate in companion rescue.',
          tip:'Always dig from above using V-Conveyor. Lateral tunnels can trap or injure rescuers.' },
     d: { pts:20,  correct:false, partial:true,  title:'Partially Effective',
@@ -1096,7 +1292,7 @@ const DECISIONS = {
     a: { pts:10,  correct:false, partial:true,  title:'Spinal Risk',
          text:'Rapid extraction without spinal precautions risks worsening spinal injuries, which are common in avalanche trauma. Assess airway and breathing before moving the patient.',
          tip:'Avalanche turbulence commonly causes spinal injuries. Stabilize before moving.' },
-    b: { pts:100, correct:true,  partial:false, title:'Correct — Airway First',
+    b: { pts:100, correct:true,  partial:false, title:'Correct — ICAR Airway Protocol',
          text:'Airway obstruction from snow and ice is the primary cause of avalanche asphyxiation. Clearing the airway and confirming breathing is the single most life-saving action you can take.',
          tip:'A-B-C: Airway → Breathing → Circulation. In snow burial, A is everything.' },
     c: { pts:20,  correct:false, partial:true,  title:'Premature CPR',
@@ -1136,14 +1332,14 @@ Game.decide = function(scene, choice) {
     const cls = data.correct ? 'fb-correct' : data.partial ? 'fb-partial' : 'fb-wrong';
     fb.className = `feedback-panel show ${cls}`;
     fb.innerHTML = `
-      <div class="feedback-title">${data.correct ? '✓' : data.partial ? '⚡' : '✗'} ${data.title}</div>
+      <div class="feedback-title">${data.correct ? ICONS.check : data.partial ? ICONS.partial : ICONS.cross} ${data.title}</div>
       <div class="feedback-text">${data.text}</div>
       <div class="feedback-tip"><strong>Protocol:</strong> ${data.tip}</div>`;
     fb.scrollIntoView({ behavior:'smooth', block:'nearest' });
   }
 
-  // Show score pop
-  showScorePop(data.pts, selBtn);
+  // Bump adherence HUD
+  ackScore();
 
   // Audio
   if (data.correct)      Audio.success();
@@ -1180,7 +1376,7 @@ Game.decide = function(scene, choice) {
 Game.goTo = function(id) {
   Audio.init();
   showScene(id);
-  if (id === 'situation') { startTimer(); }
+  if (id === 'situation') { startTimer(); Audio.startWind(); }
   if (id === 'beacon')    { BeaconGame.init(); }
   if (id === 'probe')     { ProbeGame.init(); }
   if (id === 'shovel') {
@@ -1193,10 +1389,13 @@ Game.goTo = function(id) {
   if (id === 'care') {
     document.getElementById('care-time-text').textContent =
       `Jordan has been buried approximately ${formatTime(State.timerSecs)}`;
+    Audio.startPulse();
   }
   if (id === 'debrief') {
     stopTimer();
     Audio.stopBeacon();
+    Audio.stopWind();
+    Audio.stopPulse();
     setTimeout(Debrief.render, 200);
   }
 };
@@ -1209,6 +1408,8 @@ Game.start = function() {
 Game.restart = function() {
   stopTimer();
   Audio.stopBeacon();
+  Audio.stopWind();
+  Audio.stopPulse();
   State.timerSecs = 0;
   State.score = 0;
   State.choices = {};
@@ -1233,11 +1434,13 @@ Game.restart = function() {
 
 Game.shareScore = function() {
   const surv = survivalPct(State.timerSecs);
-  const text = `I completed the Avalanche Rescue Simulator in ${formatTime(State.timerSecs)} with a ${surv}% survival outcome. Score: ${State.score}/400. Can you beat it?`;
+  const pct = Math.round(State.score / MAX_SCORE * 100);
+  const { grade } = gradeFor(pct);
+  const text = `Companion Rescue Training Module — Avalanche Scenario\nTime to Extrication: ${formatTime(State.timerSecs)}\nEst. Survival Probability: ${surv}%\nProtocol Adherence: ${pct}%\nPerformance Rating: ${grade}`;
   if (navigator.share) {
-    navigator.share({ title:'Avalanche Rescue Simulator', text }).catch(()=>{});
+    navigator.share({ title:'Companion Rescue Training Module', text }).catch(()=>{});
   } else {
-    navigator.clipboard?.writeText(text).then(() => alert('Result copied to clipboard!'));
+    navigator.clipboard?.writeText(text).then(() => alert('Summary copied to clipboard.'));
   }
 };
 
@@ -1287,7 +1490,7 @@ const BeaconGame = (() => {
 
     Audio.startBeacon(dist());
     document.getElementById('beacon-instruction').textContent =
-      'Tap on the terrain to move. Minimize the distance reading.';
+      'Tap on the terrain to move. Minimize the distance reading to locate the burial.';
     cancelAnimationFrame(animFrame);
     loop(cw, ch);
   }
@@ -1342,16 +1545,16 @@ const BeaconGame = (() => {
     // Phase labels
     if (d < 1 && !found) {
       document.getElementById('beacon-instruction').textContent =
-        '⚡ Beacon < 1m — switch to PROBE mode now!';
+        'Distance < 1 m. Begin fine search and probe confirmation.';
     } else if (d < 3) {
       document.getElementById('beacon-instruction').textContent =
-        'Fine search: grid pattern in this area. Getting close!';
+        'Fine search: systematic grid pattern. Signal is strong.';
     } else if (d < 10) {
       document.getElementById('beacon-instruction').textContent =
-        'Signal search: follow the flux line — minimize the reading.';
+        'Signal search: follow the flux line. Minimize the reading.';
     } else {
       document.getElementById('beacon-instruction').textContent =
-        'Coarse search: move across the slope to acquire the signal.';
+        'Coarse search: move across the slope to acquire a signal.';
     }
 
     if (d < 0.7 && !found) {
@@ -1359,13 +1562,13 @@ const BeaconGame = (() => {
       Audio.stopBeacon();
       Audio.success();
       if (navigator.vibrate) navigator.vibrate([50,30,50,30,100]);
-      State.score += 150; // beacon bonus
-      showScorePop(150);
+      State.score += 150;
+      ackScore();
       updateHUD();
       document.getElementById('bhud-dist').textContent = 'FOUND';
       document.getElementById('bhud-dist').style.color = 'var(--c-ok)';
       document.getElementById('beacon-instruction').textContent =
-        '✓ Signal locked. Move to PROBE phase.';
+        'Signal confirmed. Proceed to probe.';
       canvas.removeEventListener('click', handleTap);
       canvas.removeEventListener('touchend', handleTouch);
       setTimeout(() => Game.goTo('probe'), 1600);
@@ -1401,8 +1604,8 @@ const BeaconGame = (() => {
 
     // Background snow
     const snowGrad = ctx.createLinearGradient(0,0,0,ch);
-    snowGrad.addColorStop(0, '#c8dff4');
-    snowGrad.addColorStop(1, '#e4f0fb');
+    snowGrad.addColorStop(0, '#c5d8e8');
+    snowGrad.addColorStop(1, '#dae6f0');
     ctx.fillStyle = snowGrad;
     ctx.fillRect(0,0,cw,ch);
 
@@ -1452,13 +1655,13 @@ const BeaconGame = (() => {
       ctx.beginPath();
       ctx.moveTo(trail[0].x*s, trail[0].y*s);
       trail.forEach(p => ctx.lineTo(p.x*s, p.y*s));
-      ctx.strokeStyle = 'rgba(0,160,255,0.35)';
+      ctx.strokeStyle = 'rgba(143,182,207,0.45)';
       ctx.lineWidth = 2; ctx.setLineDash([4,4]);
       ctx.stroke(); ctx.setLineDash([]);
     }
 
     // Player start marker
-    ctx.fillStyle = 'rgba(91,200,245,0.25)';
+    ctx.fillStyle = 'rgba(143,182,207,0.25)';
     ctx.beginPath(); ctx.arc(trail[0].x*s, trail[0].y*s, 6, 0, Math.PI*2); ctx.fill();
 
     // Beacon signal ring when close
@@ -1466,26 +1669,23 @@ const BeaconGame = (() => {
     if (d < 5) {
       ctx.beginPath();
       ctx.arc(player.x*s, player.y*s, (5-d)*s*0.2, 0, Math.PI*2);
-      ctx.strokeStyle = 'rgba(0,255,140,0.25)';
+      ctx.strokeStyle = 'rgba(111,162,135,0.3)';
       ctx.lineWidth = 2; ctx.stroke();
     }
 
     // Player
     ctx.save();
     ctx.translate(player.x*s, player.y*s);
-    // Outer glow
-    ctx.beginPath(); ctx.arc(0,0,12,0,Math.PI*2);
-    ctx.fillStyle = 'rgba(91,200,245,0.2)'; ctx.fill();
     // Body
     ctx.beginPath(); ctx.arc(0,0,8,0,Math.PI*2);
-    ctx.fillStyle = '#1a4a8a'; ctx.fill();
-    ctx.strokeStyle = '#5bc8f5'; ctx.lineWidth = 2; ctx.stroke();
+    ctx.fillStyle = '#1a3a6a'; ctx.fill();
+    ctx.strokeStyle = '#8fb6cf'; ctx.lineWidth = 2; ctx.stroke();
     // Direction indicator
     const a = angle();
     ctx.beginPath();
     ctx.moveTo(Math.cos(a)*6, Math.sin(a)*6);
     ctx.lineTo(Math.cos(a)*12, Math.sin(a)*12);
-    ctx.strokeStyle = found ? '#3dca72' : '#5bc8f5';
+    ctx.strokeStyle = found ? '#6fa287' : '#8fb6cf';
     ctx.lineWidth = 2.5; ctx.stroke();
     ctx.restore();
 
@@ -1526,14 +1726,14 @@ const ProbeGame = (() => {
 
     if (idx === victimCell) {
       el.classList.add('hit');
-      el.textContent = '✓';
+      el.innerHTML = ICONS.check;
       Audio.probeHit();
       if (navigator.vibrate) navigator.vibrate(200);
 
       // Score
       const pts = attempts <= 3 ? 150 : attempts <= 6 ? 100 : 50;
       State.score += pts;
-      showScorePop(pts, el);
+      ackScore();
       updateHUD();
 
       // Disable remaining
@@ -1542,10 +1742,10 @@ const ProbeGame = (() => {
       const res = document.getElementById('probe-result');
       res.style.display = 'block';
       const msg = attempts <= 3
-        ? '✓ Strike on first zone — excellent probe technique!'
+        ? 'Strike confirmed — first search zone. Optimal probe technique.'
         : attempts <= 6
-        ? '⚡ Strike found — good systematic search.'
-        : '⚠ Found victim — consider tightening your probe spacing.';
+        ? 'Strike confirmed — systematic search effective.'
+        : 'Strike confirmed. Tighten probe spacing (25 cm) in future searches.';
       res.textContent = msg;
       res.style.color = attempts <= 3 ? 'var(--c-ok)' : attempts <= 6 ? 'var(--c-ice)' : 'var(--c-warn)';
       State.probeAttempts = attempts;
@@ -1557,7 +1757,7 @@ const ProbeGame = (() => {
       }
     } else {
       el.classList.add('miss');
-      el.textContent = '✗';
+      el.innerHTML = ICONS.cross;
       Audio.probeMiss();
       if (navigator.vibrate) navigator.vibrate([30,20,30]);
 
@@ -1566,7 +1766,7 @@ const ProbeGame = (() => {
         const cells = document.querySelectorAll('.probe-cell');
         cells[victimCell].classList.remove('probed');
         cells[victimCell].classList.add('hit');
-        cells[victimCell].textContent = '✓';
+        cells[victimCell].innerHTML = ICONS.check;
         State.probeAttempts = attempts;
         const nextBtn = document.getElementById('next-probe');
         if (nextBtn) nextBtn.style.display = 'flex';
@@ -1582,31 +1782,17 @@ const Debrief = (() => {
   function render() {
     const t = State.timerSecs;
     const surv = survivalPct(t);
-    const score = State.score;
-    const maxScore = 400 + 150 + 150; // decisions + beacon + probe
-    const pct = Math.round(score / maxScore * 100);
+    const pct = Math.round(State.score / MAX_SCORE * 100);
+    const { grade, cls: outcomeClass, label: outcomeLabel } = gradeFor(pct);
 
-    let grade, outcomeClass;
-    if (pct >= 85)      { grade = 'A'; outcomeClass = 'excellent'; }
-    else if (pct >= 70) { grade = 'B'; outcomeClass = 'good'; }
-    else if (pct >= 50) { grade = 'C'; outcomeClass = 'fair'; }
-    else                { grade = 'D'; outcomeClass = 'poor'; }
-
-    const outcomeLabels = {
-      excellent: 'OUTSTANDING RESCUE',
-      good:      'EFFECTIVE RESCUE',
-      fair:      'RESCUE COMPLETED',
-      poor:      'RESCUE INCOMPLETE'
-    };
-
-    document.getElementById('debrief-outcome-label').textContent = outcomeLabels[outcomeClass];
+    document.getElementById('debrief-outcome-label').textContent = outcomeLabel;
     document.getElementById('debrief-outcome-label').className = `debrief-outcome ${outcomeClass}`;
     document.getElementById('debrief-sub').textContent =
-      `Jordan's survival probability at rescue: ${surv}%`;
+      `Est. survival probability at time of extrication: ${surv}%`;
 
     document.getElementById('ds-time').textContent  = `${Math.floor(t/60)}:${String(t%60).padStart(2,'0')}`;
     document.getElementById('ds-surv').textContent  = `${surv}%`;
-    document.getElementById('ds-score').textContent = score;
+    document.getElementById('ds-score').textContent = `${pct}%`;
     document.getElementById('ds-grade').textContent = grade;
 
     drawSurvivalChart(t, surv);
@@ -1629,17 +1815,17 @@ const Debrief = (() => {
     const ch = h - pad.top  - pad.bottom;
 
     const survGrad = ctx.createLinearGradient(pad.left, pad.top, pad.left+cw, pad.top);
-    survGrad.addColorStop(0,    'rgba(61,202,114,0.6)');
-    survGrad.addColorStop(0.17, 'rgba(61,202,114,0.5)');
-    survGrad.addColorStop(0.33, 'rgba(245,166,35,0.4)');
-    survGrad.addColorStop(0.5,  'rgba(232,64,64,0.35)');
-    survGrad.addColorStop(1,    'rgba(232,64,64,0.2)');
+    survGrad.addColorStop(0,    'rgba(111,162,135,0.55)');
+    survGrad.addColorStop(0.17, 'rgba(111,162,135,0.45)');
+    survGrad.addColorStop(0.33, 'rgba(199,154,78,0.4)');
+    survGrad.addColorStop(0.5,  'rgba(196,82,82,0.35)');
+    survGrad.addColorStop(1,    'rgba(196,82,82,0.2)');
 
     function drawFrame(prog) {
       ctx.clearRect(0, 0, w, h);
 
       // Background (rounded rect polyfill)
-      ctx.fillStyle = '#131b26';
+      ctx.fillStyle = '#181f27';
       ctx.beginPath();
       const r = 6;
       ctx.moveTo(r, 0); ctx.lineTo(w-r, 0); ctx.arcTo(w,0,w,r,r);
@@ -1658,7 +1844,7 @@ const Debrief = (() => {
       });
 
       // Y axis labels
-      ctx.fillStyle = '#5a7a96'; ctx.font = '9px Inter'; ctx.textAlign = 'right';
+      ctx.fillStyle = '#76838f'; ctx.font = '9px Inter'; ctx.textAlign = 'right';
       ['100%','75%','50%','25%','0%'].forEach((lbl,i) => {
         ctx.fillText(lbl, pad.left-4, pad.top + (ch/4)*i + 3);
       });
@@ -1690,7 +1876,7 @@ const Debrief = (() => {
 
       // Animated vertical marker
       const vx = pad.left + (Math.min(burialSecs, 5400) / 5400) * cw * prog;
-      ctx.strokeStyle = '#5bc8f5'; ctx.lineWidth = 2; ctx.setLineDash([4,3]);
+      ctx.strokeStyle = '#8fb6cf'; ctx.lineWidth = 2; ctx.setLineDash([4,3]);
       ctx.beginPath(); ctx.moveTo(vx, pad.top); ctx.lineTo(vx, pad.top+ch); ctx.stroke();
       ctx.setLineDash([]);
 
@@ -1698,9 +1884,9 @@ const Debrief = (() => {
         // Final dot + label
         const vy = pad.top + ch * (1 - surv/100);
         ctx.beginPath(); ctx.arc(vx, vy, 5, 0, Math.PI*2);
-        ctx.fillStyle = '#5bc8f5'; ctx.fill();
-        ctx.strokeStyle = '#fff'; ctx.lineWidth = 1.5; ctx.stroke();
-        ctx.fillStyle = '#5bc8f5'; ctx.font = 'bold 11px Inter'; ctx.textAlign = 'left';
+        ctx.fillStyle = '#8fb6cf'; ctx.fill();
+        ctx.strokeStyle = '#e6ebf0'; ctx.lineWidth = 1.5; ctx.stroke();
+        ctx.fillStyle = '#8fb6cf'; ctx.font = 'bold 11px Inter'; ctx.textAlign = 'left';
         ctx.fillText(`${surv}% @ ${Math.floor(burialSecs/60)}m`, vx + 6, vy - 4);
       }
     }
@@ -1715,22 +1901,22 @@ const Debrief = (() => {
   }
 
   const PHASES = {
-    response: 'First Response',
-    help:     'Call for Help',
-    shovel:   'Shoveling',
-    care:     'Patient Care'
+    response: 'Scene Safety & Organization',
+    help:     'Transceiver Signal Search',
+    shovel:   'Strategic Excavation',
+    care:     'Patient Assessment & Care'
   };
 
   function renderDecisions() {
     const container = document.getElementById('debrief-decisions');
-    container.innerHTML = '<div style="font-size:11px;letter-spacing:2px;color:var(--c-muted);text-transform:uppercase;margin-bottom:8px;padding:0 0 0 0">Decision Breakdown</div>';
+    container.innerHTML = '<div style="font-size:11px;letter-spacing:2px;color:var(--c-muted);text-transform:uppercase;margin-bottom:8px">Decision Breakdown</div>';
 
     Object.entries(State.choices).forEach(([key, val]) => {
       const d = DECISIONS[key]?.[val.choice];
       if (!d) return;
       const row = document.createElement('div');
       row.className = 'debrief-decision-row';
-      const icon = val.correct ? '✓' : d.partial ? '⚡' : '✗';
+      const icon = val.correct ? ICONS.check : d.partial ? ICONS.partial : ICONS.cross;
       const cls  = val.correct ? 'ok' : d.partial ? 'warn' : 'bad';
       row.innerHTML = `
         <div class="ddr-icon">${icon}</div>
@@ -1738,35 +1924,38 @@ const Debrief = (() => {
           <div class="ddr-phase">${PHASES[key] || key}</div>
           <div class="ddr-result ${cls}">${d.title}</div>
         </div>
-        <div class="ddr-pts">+${val.pts}</div>`;
+        <div class="ddr-pts">${val.pts}/100</div>`;
       container.appendChild(row);
     });
 
-    // Add beacon and probe rows
+    // Beacon row
     if (State.score >= 150) {
       const row = document.createElement('div');
       row.className = 'debrief-decision-row';
-      row.innerHTML = `<div class="ddr-icon">✓</div><div class="ddr-content"><div class="ddr-phase">Beacon Search</div><div class="ddr-result ok">Victim located</div></div><div class="ddr-pts">+150</div>`;
+      row.innerHTML = `<div class="ddr-icon">${ICONS.check}</div><div class="ddr-content"><div class="ddr-phase">Transceiver Search</div><div class="ddr-result ok">Burial located</div></div><div class="ddr-pts">+150</div>`;
       container.appendChild(row);
     }
+    // Probe row
     const probeRow = document.createElement('div');
     probeRow.className = 'debrief-decision-row';
     const probePts = State.probeAttempts <= 3 ? 150 : State.probeAttempts <= 6 ? 100 : 50;
     const probeClass = State.probeAttempts <= 3 ? 'ok' : State.probeAttempts <= 6 ? 'warn' : 'bad';
-    probeRow.innerHTML = `<div class="ddr-icon">⏎</div><div class="ddr-content"><div class="ddr-phase">Probe Strike</div><div class="ddr-result ${probeClass}">${State.probeAttempts} probe${State.probeAttempts!==1?'s':''} used</div></div><div class="ddr-pts">+${probePts}</div>`;
+    const probeIcon = State.probeAttempts <= 3 ? ICONS.check : ICONS.partial;
+    probeRow.innerHTML = `<div class="ddr-icon">${probeIcon}</div><div class="ddr-content"><div class="ddr-phase">Probe Confirmation</div><div class="ddr-result ${probeClass}">${State.probeAttempts} probe${State.probeAttempts!==1?'s':''} used</div></div><div class="ddr-pts">+${probePts}</div>`;
     container.appendChild(probeRow);
   }
 
   function renderLearnings() {
     const container = document.getElementById('debrief-learnings');
     const learnings = [
-      'The 15-minute window is critical — survival drops sharply after 30 minutes.',
-      'V-Conveyor shoveling is 2–3× faster than direct burial approach.',
-      'Always clear airway before assessing circulation in avalanche burial.',
-      'Texts work better than voice calls on weak mountain signal.',
-      'Note last-seen points before they fade — they anchor the search.'
+      'Companion rescue in the first 15 minutes is the primary determinant of survival (Brugger et al.).',
+      'V-Conveyor shoveling extracts buried subjects 2–3× faster than direct excavation (AIARE Level 1).',
+      'Airway clearance precedes all other interventions in avalanche burial — ICAR MEDCOM guideline.',
+      'SMS messaging outperforms voice calls on marginal mountain signal; transmit GPS coordinates and burial count.',
+      'Document last-seen points before memory degrades — they anchor the systematic search.'
     ];
-    container.innerHTML = '<div class="dkl-label">Key Takeaways</div>' +
+    container.innerHTML = '<div class="dkl-label">Key Learning Points</div>' +
+      '<div class="dkl-ref">AIARE Companion Rescue Protocol · ICAR MEDCOM Guidelines</div>' +
       learnings.map(l => `<div class="dkl-item">${l}</div>`).join('');
   }
 
@@ -1775,6 +1964,7 @@ const Debrief = (() => {
 
 // ── INIT ─────────────────────────────────────────────────────────────────────
 document.getElementById('progress-bar').style.display = 'none';
+document.getElementById('mute-icon').innerHTML = ICONS.speaker;
 
 })(); // end IIFE
 </script>
