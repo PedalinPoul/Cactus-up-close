@@ -552,31 +552,21 @@ html, body { height:100%; overflow:hidden; background:var(--c-bg); color:var(--c
 <div id="scene-splash" class="scene active">
   <div class="splash-mountains"></div>
   <div class="splash-content">
-    <div class="splash-badge">COMPANION RESCUE TRAINING MODULE</div>
-    <div class="splash-module-line">MODULE 01 · SINGLE BURIAL — MULTIPLE SUBJECT SCENARIO</div>
+    <div class="splash-badge">COMPANION RESCUE · MODULE 01</div>
     <h1 class="splash-title">Avalanche<span>Companion Rescue</span></h1>
-    <p class="splash-subtitle">AIARE Companion Rescue Protocol · ICAR MEDCOM Guidelines</p>
-    <div class="splash-objectives">
-      <div class="splash-obj-label">Learning Objectives</div>
-      <ol class="splash-obj-list">
-        <li>Apply scene safety and organization at an avalanche burial site</li>
-        <li>Conduct a systematic transceiver signal and fine search</li>
-        <li>Execute probe confirmation and V-Conveyor excavation</li>
-        <li>Perform airway-first patient assessment on a buried subject</li>
-      </ol>
-    </div>
+    <p class="splash-subtitle">Scenario-based · AIARE protocol</p>
     <div class="splash-stats">
       <div class="splash-stat">
         <div class="stat-num">92%</div>
-        <div class="stat-lbl">Survival if extricated<br>within 15 minutes</div>
+        <div class="stat-lbl">Survival if extricated<br>within 15 min</div>
       </div>
       <div class="splash-stat">
         <div class="stat-num">30%</div>
-        <div class="stat-lbl">Survival after<br>45 minutes buried</div>
+        <div class="stat-lbl">Survival after<br>45 min buried</div>
       </div>
     </div>
     <button class="btn-primary" onclick="Game.start()">Begin Scenario</button>
-    <p class="splash-disc">This module presents the AIARE companion rescue protocol in a scenario-based format. It does not replace hands-on avalanche rescue training. Carry beacon, probe, and shovel in all avalanche terrain.</p>
+    <p class="splash-disc">Training module only — not a substitute for hands-on avalanche rescue certification.</p>
   </div>
 </div>
 
@@ -944,23 +934,24 @@ const Audio = (() => {
     ctx.resume();
   }
 
-  function beep(freq, dur, vol=0.14, type='sine') {
+  function beep(freq, dur, vol=0.28, type='sine') {
     if (!ctx || !masterGain) return;
     try {
+      if (ctx.state === 'suspended') ctx.resume();
       const o = ctx.createOscillator(), g = ctx.createGain();
       o.connect(g); g.connect(masterGain);
       o.type = type; o.frequency.value = freq;
       g.gain.setValueAtTime(0, ctx.currentTime);
-      g.gain.linearRampToValueAtTime(vol, ctx.currentTime + 0.006);
+      g.gain.linearRampToValueAtTime(vol, ctx.currentTime + 0.008);
       g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + dur);
       o.start(); o.stop(ctx.currentTime + dur + 0.01);
     } catch(e){}
   }
 
-  function success() { beep(330, 0.22, 0.13); }
-  function partial() { beep(262, 0.22, 0.11); }
+  function success() { beep(330, 0.25, 0.28); setTimeout(() => beep(440, 0.2, 0.2), 180); }
+  function partial() { beep(262, 0.28, 0.22); }
   function error() {
-    beep(98, 0.5, 0.16); setTimeout(() => beep(104, 0.5, 0.12), 30);
+    beep(98, 0.5, 0.28); setTimeout(() => beep(104, 0.5, 0.22), 30);
   }
 
   function makeBrownNoise(seconds) {
@@ -1011,7 +1002,8 @@ const Audio = (() => {
   function fireBeaconTone() {
     if (!ctx || !masterGain) return;
     try {
-      const vol = 0.10 + (1 - Math.min(beaconDist, 25) / 25) * 0.12;
+      if (ctx.state === 'suspended') ctx.resume();
+      const vol = 0.18 + (1 - Math.min(beaconDist, 25) / 25) * 0.18;
       const dur = 0.09;
       const o1 = ctx.createOscillator(), g1 = ctx.createGain();
       o1.connect(g1); g1.connect(masterGain); o1.frequency.value = 700;
@@ -1033,9 +1025,10 @@ const Audio = (() => {
     try {
       const o = ctx.createOscillator(), g = ctx.createGain();
       o.connect(g); g.connect(masterGain);
+      if (ctx.state === 'suspended') ctx.resume();
       o.frequency.setValueAtTime(90, ctx.currentTime);
       o.frequency.linearRampToValueAtTime(60, ctx.currentTime + 0.12);
-      g.gain.setValueAtTime(0.18, ctx.currentTime);
+      g.gain.setValueAtTime(0.32, ctx.currentTime);
       g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.18);
       o.start(); o.stop(ctx.currentTime + 0.2);
       const nb = ctx.createBuffer(1, ctx.sampleRate * 0.08, ctx.sampleRate);
@@ -1044,7 +1037,7 @@ const Audio = (() => {
       const ns = ctx.createBufferSource(), lp = ctx.createBiquadFilter(), ng = ctx.createGain();
       lp.type = 'lowpass'; lp.frequency.value = 300;
       ns.buffer = nb; ns.connect(lp); lp.connect(ng); ng.connect(masterGain);
-      ng.gain.setValueAtTime(0.12, ctx.currentTime);
+      ng.gain.setValueAtTime(0.22, ctx.currentTime);
       ng.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.12);
       ns.start(); ns.stop(ctx.currentTime + 0.12);
     } catch(e){}
@@ -1053,19 +1046,20 @@ const Audio = (() => {
   function probeMiss() {
     if (!ctx || !masterGain) return;
     try {
+      if (ctx.state === 'suspended') ctx.resume();
       const nb = ctx.createBuffer(1, ctx.sampleRate * 0.08, ctx.sampleRate);
       const nd = nb.getChannelData(0);
       for (let i = 0; i < nd.length; i++) nd[i] = Math.random() * 2 - 1;
       const ns = ctx.createBufferSource(), bp = ctx.createBiquadFilter(), ng = ctx.createGain();
       bp.type = 'bandpass'; bp.frequency.value = 2800; bp.Q.value = 1.5;
       ns.buffer = nb; ns.connect(bp); bp.connect(ng); ng.connect(masterGain);
-      ng.gain.setValueAtTime(0.10, ctx.currentTime);
+      ng.gain.setValueAtTime(0.22, ctx.currentTime);
       ng.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.1);
       ns.start(); ns.stop(ctx.currentTime + 0.1);
     } catch(e){}
   }
 
-  function tick() { beep(700, 0.04, 0.07); }
+  function tick() { beep(700, 0.05, 0.18); }
 
   function startBeacon(dist) {
     beaconDist = dist; stopBeacon();
@@ -1424,8 +1418,10 @@ Game.restart = function() {
     const nxt = document.getElementById(`next-${sc}`);
     if (nxt) nxt.style.display = 'none';
   });
-  document.querySelectorAll('.technique-card').forEach(c => {
+  document.querySelectorAll('.technique-card').forEach((c, i) => {
+    const k = ['a','b','c','d'][i];
     c.classList.remove('correct','wrong');
+    c.onclick = () => Game.decide('shovel', k);
   });
   showScene('splash');
   document.getElementById('hud').classList.remove('visible');
@@ -1543,9 +1539,9 @@ const BeaconGame = (() => {
     Audio.updateBeacon(d);
 
     // Phase labels
-    if (d < 1 && !found) {
+    if (d < 2 && !found) {
       document.getElementById('beacon-instruction').textContent =
-        'Distance < 1 m. Begin fine search and probe confirmation.';
+        'Signal strong — continue closing in to trigger probe phase.';
     } else if (d < 3) {
       document.getElementById('beacon-instruction').textContent =
         'Fine search: systematic grid pattern. Signal is strong.';
@@ -1557,7 +1553,7 @@ const BeaconGame = (() => {
         'Coarse search: move across the slope to acquire a signal.';
     }
 
-    if (d < 0.7 && !found) {
+    if (d < 1.5 && !found) {
       found = true;
       Audio.stopBeacon();
       Audio.success();
