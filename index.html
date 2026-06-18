@@ -1488,7 +1488,9 @@ function formatTime(secs) {
 // ── BEACON MINI-GAME ─────────────────────────────────────────────────────────
 const BeaconGame = (() => {
   const SCALE = 380 / 25; // pixels per meter at base 380px
-  const SIGNAL_RANGE = 18;
+  // Player starts at (12.5, 22), victim at y=3–12. Min distance = 10m.
+  // SIGNAL_RANGE=8 guarantees all runs start with no signal.
+  const SIGNAL_RANGE = 8;
   let canvas, ctx, animFrame;
   let victim, player, target;
   let trail = [];
@@ -1497,10 +1499,9 @@ const BeaconGame = (() => {
   // Phase state
   let phase = 'SEARCHING'; // SEARCHING | COARSE | FINE | PINPOINTED
   let bestMinDist = Infinity, bestMinPos = null;
-  let bracketAxis = 'x';
-  let acquiredOnce = false;
   let dipoleAngle = 0;
   let bracketedX = false, bracketedY = false;
+  let closeCount = 0, lastWasClose = false, maxGapAfterClose = 0;
 
   function setInstruction(text) {
     const el = document.getElementById('beacon-instruction');
@@ -1542,15 +1543,16 @@ const BeaconGame = (() => {
     phase = 'SEARCHING';
     bestMinDist = Infinity;
     bestMinPos = null;
-    bracketAxis = 'x';
-    acquiredOnce = false;
     bracketedX = false;
     bracketedY = false;
+    closeCount = 0;
+    lastWasClose = false;
+    maxGapAfterClose = 0;
     dipoleAngle = Math.random() * Math.PI * 2;
 
-    // Place victim: y between 3 and 12, x between 5 and 20
+    // Place victim in upper debris (y=3–12), player at lower center (y=22).
+    // Min d=10m > SIGNAL_RANGE=8 — all runs start with no signal.
     victim = { x: 5 + Math.random() * 15, y: 3 + Math.random() * 9 };
-    // Place player: x=12.5, y=22 — guarantees d > SIGNAL_RANGE at start
     player = { x: 12.5, y: 22 };
     target = { ...player };
     trail  = [{ ...player }];
@@ -1796,7 +1798,6 @@ const BeaconGame = (() => {
     if (phase === 'SEARCHING') {
       if (d <= SIGNAL_RANGE) {
         phase = 'COARSE';
-        acquiredOnce = true;
         Audio.startBeacon(d);
         setInstruction(`Signal acquired — ${Math.round(d)} m. Follow the arrow. The signal curves; trust the arrow, not the mountain.`);
       } else {
@@ -1812,34 +1813,54 @@ const BeaconGame = (() => {
     } else if (phase === 'FINE') {
       const noise = (Math.sin(player.x * 7.3 + player.y * 3.1) * 0.15);
       const displayD = Math.max(0.1, d + noise);
+
+      // Track visual minimum for canvas cross
       if (displayD < bestMinDist) {
         bestMinDist = displayD;
         bestMinPos = { x: player.x, y: player.y };
-        // Track brackets: first new min = bracketedX, second = bracketedY
-        if (!bracketedX) bracketedX = true;
-        else bracketedY = true;
       }
-      const dStr = displayD.toFixed(1);
-      if (bestMinPos && (displayD > bestMinDist + 0.1)) {
-        setInstruction(`${dStr} m — signal rising. Back up to the minimum reading (${bestMinDist.toFixed(1)} m).`);
-      } else if (bracketedX && !bracketedY) {
-        setInstruction(`Minimum: ${bestMinDist.toFixed(1)} m. Rotate 90° and approach from a new direction to confirm.`);
+
+      // Bracketing: two close approaches (d<0.8m) with ≥1.5m gap between them
+      if (d < 0.8) {
+        if (!lastWasClose) {
+          closeCount++;
+          lastWasClose = true;
+          if (closeCount === 1) {
+            bracketedX = true;
+            maxGapAfterClose = 0;
+          } else if (closeCount >= 2 && maxGapAfterClose >= 1.5) {
+            bracketedY = true;
+          }
+        }
       } else {
-        setInstruction(`Fine search: ${dStr} m. Move slowly toward the minimum.`);
+        if (lastWasClose) lastWasClose = false;
+        if (bracketedX && !bracketedY) maxGapAfterClose = Math.max(maxGapAfterClose, d);
       }
-      // Display the noisy distance
+
+      // Instruction
+      if (!bracketedX) {
+        setInstruction(`Fine search: ${displayD.toFixed(1)} m — move slowly toward the minimum reading.`);
+      } else if (!bracketedY) {
+        if (maxGapAfterClose < 1.5) {
+          setInstruction(`Minimum located at ${bestMinDist.toFixed(1)} m. Back up at least 1.5 m, then re-approach from a new angle.`);
+        } else {
+          setInstruction(`Good — now re-approach from a different direction to confirm. ${displayD.toFixed(1)} m.`);
+        }
+      }
+
       distEl.textContent = displayD.toFixed(1) + 'm';
       distEl.className = 'bhud-val' + (displayD < 3 ? (displayD < 1 ? ' close' : ' near') : '');
 
-      // Win condition
-      if (d < 0.6 && bracketedX && bracketedY) {
+      // Win: both approaches bracketed
+      if (bracketedX && bracketedY) {
         phase = 'PINPOINTED';
         const depth = (0.5 + Math.random() * 1.7).toFixed(1);
         State.probeDepth = depth;
         Audio.stopBeacon();
         Audio.success();
+        if (navigator.vibrate) navigator.vibrate([50,30,50,30,100]);
         State.score += 150; ackScore(); updateHUD();
-        setInstruction(`Pinpoint confirmed. Estimated depth: ${depth} m. Mark and begin spiral probe.`);
+        setInstruction(`Pinpoint confirmed. Estimated depth: ${depth} m. Proceed to probe.`);
         canvas.removeEventListener('click', handleTap);
         canvas.removeEventListener('touchend', handleTouch);
         setTimeout(() => Game.goTo('probe'), 1800);
