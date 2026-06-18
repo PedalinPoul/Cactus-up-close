@@ -236,6 +236,8 @@ html, body { height:100%; overflow:hidden; background:var(--c-bg); color:var(--c
   border-top:1px solid var(--c-border); line-height:1.5;
 }
 .feedback-tip strong { color:var(--c-ice); }
+.decision-story { font-style: italic; color: var(--c-text); margin-bottom: 0.5em; }
+.scene-intro { font-size:14px; line-height:1.7; color:var(--c-text); padding:16px 20px 0; }
 
 /* ─── SCENE: BEACON ──────────────────────────────────────────────────────── */
 #scene-beacon {
@@ -519,6 +521,39 @@ html, body { height:100%; overflow:hidden; background:var(--c-bg); color:var(--c
   .splash-title { font-size:40px; }
   #beacon-canvas { max-width:380px; max-height:380px; }
 }
+.outcome-block {
+  border: 1px solid var(--c-border);
+  border-radius: var(--r-sm);
+  padding: 1rem 1.25rem;
+  margin: 0 20px 1.5rem;
+}
+.outcome-survived {
+  border-color: var(--c-ok);
+  background: rgba(111,162,135,0.08);
+}
+.outcome-lost {
+  border-color: var(--c-border);
+  background: rgba(0,0,0,0.2);
+}
+.outcome-label {
+  font-family: var(--f-mono);
+  font-size: 0.65rem;
+  letter-spacing: 0.12em;
+  color: var(--c-muted);
+  margin-bottom: 0.25rem;
+}
+.outcome-name {
+  font-family: var(--f-mono);
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--c-snow);
+  margin-bottom: 0.75rem;
+}
+.outcome-caveat {
+  font-size: 0.85rem;
+  color: var(--c-muted);
+  margin-top: 0.5rem;
+}
 </style>
 </head>
 <body>
@@ -554,7 +589,8 @@ html, body { height:100%; overflow:hidden; background:var(--c-bg); color:var(--c
   <div class="splash-content">
     <div class="splash-badge">COMPANION RESCUE · MODULE 01</div>
     <h1 class="splash-title">Avalanche<span>Companion Rescue</span></h1>
-    <p class="splash-subtitle">Scenario-based · AIARE protocol</p>
+    <p class="splash-subtitle">Your group gets caught. You have minutes.</p>
+    <p class="splash-disc" style="margin-top:-8px">This module walks you through a single-burial companion rescue — the decisions and skills that determine whether your partner survives.</p>
     <div class="splash-stats">
       <div class="splash-stat">
         <div class="stat-num">92%</div>
@@ -597,10 +633,11 @@ html, body { height:100%; overflow:hidden; background:var(--c-bg); color:var(--c
       </div>
     </div>
     <div class="situation-narrative">
-      <p class="narrative-p">You're on a backcountry ski tour with your friends Jordan and Alex — a three-person team with avalanche gear: beacon, probe, and shovel, all carried.</p>
-      <p class="narrative-p">Two hours in, you reach the headwall. The morning light looks perfect. You cross the ridgeline and drop onto the northeast face.</p>
-      <p class="narrative-p incident">Then you hear the crack. The entire slope releases. A slab 80 meters wide breaks loose above your group.</p>
-      <p class="narrative-p">You self-arrest on the edge of the slide path. The debris settles 200 meters below.</p>
+      <p class="narrative-p">You dropped in first — the snow felt perfect, a little wind-buffed but stable. Jordan and Alex followed.</p>
+      <p class="narrative-p">Halfway down the face, you hear the crack. It starts above the rock band, 80 metres wide, and it moves faster than you expect. You dig your pole tip in and hold. The slab hits and rolls past you in a wall of white.</p>
+      <p class="narrative-p incident">Then it stops. The mountain goes quiet.</p>
+      <p class="narrative-p">You look down. Alex is visible — upper body above the debris, not moving. Jordan is gone. Last seen 30 metres downslope of the release point. The debris field is rough and deep.</p>
+      <p class="narrative-p">Your beacon is switched to search. You have maybe 15 minutes before the survival curve turns steep.</p>
     </div>
     <div class="victims-list">
       <div class="victim-card partial">
@@ -627,6 +664,7 @@ html, body { height:100%; overflow:hidden; background:var(--c-bg); color:var(--c
 
 <!-- ══ SCENE: DECISION 1 — FIRST RESPONSE ═══════════════════════════════════ -->
 <div id="scene-response" class="scene scene-decision">
+  <p class="scene-intro">Alex is breathing — you can see the chest moving from here. Jordan is somewhere under several feet of snow, still on transmit. You have your probe and shovel. What do you do?</p>
   <div class="decision-header">
     <div class="decision-phase">Scene Safety &amp; Organization</div>
     <div class="decision-clock"><svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="7" cy="7" r="6"/><polyline points="7,3.5 7,7 9.5,9"/></svg><span class="clock-text">Every second of burial reduces survival probability</span></div>
@@ -659,6 +697,7 @@ html, body { height:100%; overflow:hidden; background:var(--c-bg); color:var(--c
 
 <!-- ══ SCENE: DECISION 2 — CALL FOR HELP ════════════════════════════════════ -->
 <div id="scene-help" class="scene scene-decision">
+  <p class="scene-intro">Backup is an hour out by snowmobile at best. You need to decide right now what to communicate — if anything — before the search begins.</p>
   <div class="decision-header">
     <div class="decision-phase">Transceiver Signal Search</div>
     <div class="decision-clock"><svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="7" cy="7" r="6"/><polyline points="7,3.5 7,7 9.5,9"/></svg><span class="clock-text">Jordan and Alex have been buried ~90 seconds</span></div>
@@ -693,7 +732,7 @@ html, body { height:100%; overflow:hidden; background:var(--c-bg); color:var(--c
 <div id="scene-beacon" class="scene">
   <div class="beacon-header">
     <div class="beacon-phase-label">Pinpoint &amp; Probe Confirmation</div>
-    <div id="beacon-instruction" class="beacon-instruction">Tap the terrain to move. Minimize the distance reading to locate Jordan.</div>
+    <div id="beacon-instruction" class="beacon-instruction">Begin systematic strip search — 10 m lanes. No signal detected.</div>
   </div>
   <div class="beacon-hud">
     <div class="bhud-card">
@@ -731,27 +770,12 @@ html, body { height:100%; overflow:hidden; background:var(--c-bg); color:var(--c
 
 <!-- ══ SCENE: PROBE ══════════════════════════════════════════════════════════ -->
 <div id="scene-probe" class="scene">
-  <div class="probe-header">
-    <div class="probe-phase">Pinpoint &amp; Probe Confirmation</div>
-    <div class="probe-q">Beacon reads &lt;1m. Pinpoint Jordan's exact location with your probe.</div>
-    <div class="probe-sub">Tap each grid square to probe — 25cm spacing. Find the strike.</div>
-    <div class="probe-attempts" id="probe-attempts-text">Probes used: 0 of 9</div>
-  </div>
-  <div class="probe-grid-wrap">
-    <div class="probe-visual">
-      <div class="probe-snow-texture"></div>
-      <div class="probe-grid" id="probe-grid"></div>
-    </div>
-    <div id="probe-result" style="text-align:center;font-size:14px;color:var(--c-muted);display:none"></div>
-  </div>
-  <div class="btn-wrap" id="next-probe" style="display:none">
-    <button class="btn-primary" onclick="Game.goTo('shovel')">Proceed to Excavation</button>
-  </div>
-  <div class="scene-scroll-pad"></div>
+  <!-- Content is dynamically rendered by ProbeGame.renderProbeScene() -->
 </div>
 
 <!-- ══ SCENE: SHOVEL ════════════════════════════════════════════════════════ -->
 <div id="scene-shovel" class="scene scene-decision">
+  <p class="scene-intro">You've confirmed Jordan at <span id="intro-depth">?</span> m depth and marked the spot. Alex is stable and watching from upslope. This is the excavation.</p>
   <div class="decision-header">
     <div class="decision-phase">Strategic Excavation</div>
     <div class="decision-clock"><svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="7" cy="7" r="6"/><polyline points="7,3.5 7,7 9.5,9"/></svg><span class="clock-text" id="shovel-time-text">Jordan has been buried for some time</span></div>
@@ -831,6 +855,7 @@ html, body { height:100%; overflow:hidden; background:var(--c-bg); color:var(--c
 
 <!-- ══ SCENE: PATIENT CARE ═══════════════════════════════════════════════════ -->
 <div id="scene-care" class="scene scene-decision">
+  <p class="scene-intro">Jordan is out. Eyes closed, breathing shallow, cold to the touch. The clock reads <span id="intro-elapsed">--:--</span>. You have maybe 20 minutes before the helicopter arrives — or doesn't.</p>
   <div class="decision-header">
     <div class="decision-phase">Patient Assessment &amp; Care</div>
     <div class="decision-clock"><svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="7" cy="7" r="6"/><polyline points="7,3.5 7,7 9.5,9"/></svg><span id="care-time-text" class="clock-text">Jordan has been buried for some time</span></div>
@@ -1161,7 +1186,9 @@ const State = {
   choices:     {},   // { 'response': {choice,pts,correct}, ... }
   probeAttempts: 0,
   beaconSteps: 0,
-  started:     false
+  started:     false,
+  probeDepth:  null,
+  jordanSurvived: null
 };
 
 let timerInterval = null;
@@ -1245,12 +1272,14 @@ const DECISIONS = {
          text:'Your instinct is right, but skipped a critical step: confirm your own safety first. A third victim makes rescue harder for everyone. Also note last-seen points before memory fades.',
          tip:'Protocol order: Safety check → Note last-seen points → Switch beacon to Search → Initiate outside rescue.' },
     b: { pts:100, correct:true,  partial:false, title:'Correct — Protocol Compliant',
+         story:`"You lock in — one clear head in this kind of chaos is everything."`,
          text:'Perfect execution. You protected yourself from becoming a third victim, preserved last-seen location data, and are positioned to begin systematic search.',
          tip:'The 3-second rule: Take 3 seconds to confirm YOU are safe before beginning rescue.' },
     c: { pts:0,   correct:false, partial:false, title:'Critical Delay',
          text:'In most avalanche terrain, cell service is unreliable. Outside help takes 30–90+ minutes. Companion rescue in the first 15 minutes is the only intervention that significantly changes survival odds.',
          tip:'Initiate outside rescue — but never at the expense of companion search.' },
     d: { pts:0,   correct:false, partial:false, title:'Critical Protocol Failure',
+         story:`"You pull out your phone. No signal. You've burned 90 seconds and Jordan is still under the snow."`,
          text:'Abandoning the scene means Jordan and Alex will almost certainly die. The survival window is 15 minutes — far less time than it would take to reach help on foot.',
          tip:'You are Jordan and Alex\'s only chance. Never leave buried victims.' }
   },
@@ -1259,6 +1288,7 @@ const DECISIONS = {
          text:'Moving away from the scene to improve signal wastes precious minutes. A text message on 1 bar is far more efficient than seeking better reception.',
          tip:'SMS uses less bandwidth than voice calls and has a higher success rate on weak signals.' },
     b: { pts:100, correct:true,  partial:false, title:'Correct — Protocol Compliant',
+         story:`"Right call. The message is sent. Now move."`,
          text:'Text messages route efficiently on weak signals. You\'ve activated the rescue chain without losing momentum on your primary task: the beacon search.',
          tip:'Your text should include: location, number buried, time of burial, your phone number.' },
     c: { pts:10,  correct:false, partial:true,  title:'Incomplete Protocol',
@@ -1273,6 +1303,7 @@ const DECISIONS = {
          text:'Digging straight down creates a deep, narrow shaft you can\'t remove snow from efficiently. You\'ll exhaust yourself within minutes and slow the rescue significantly.',
          tip:'Direct approach is 2–3× slower than V-Conveyor and risks injury to shovelers.' },
     b: { pts:100, correct:true,  partial:false, title:'Correct — V-Conveyor Protocol',
+         story:`"Efficient and methodical — this is how you get someone out in time."`,
          text:'Starting 1.5× burial depth (about 2m) away and using a V-formation with rotating shovelers is the fastest proven technique. Research shows it extracts victims 2–3× faster.',
          tip:'Rotate shovelers every 30–60 seconds: front shoveler passes snow back, rear shoveler clears it away.' },
     c: { pts:0,   correct:false, partial:false, title:'Critical Protocol Failure',
@@ -1287,6 +1318,7 @@ const DECISIONS = {
          text:'Rapid extraction without spinal precautions risks worsening spinal injuries, which are common in avalanche trauma. Assess airway and breathing before moving the patient.',
          tip:'Avalanche turbulence commonly causes spinal injuries. Stabilize before moving.' },
     b: { pts:100, correct:true,  partial:false, title:'Correct — ICAR Airway Protocol',
+         story:`"Airway. That's the priority. Everything else follows."`,
          text:'Airway obstruction from snow and ice is the primary cause of avalanche asphyxiation. Clearing the airway and confirming breathing is the single most life-saving action you can take.',
          tip:'A-B-C: Airway → Breathing → Circulation. In snow burial, A is everything.' },
     c: { pts:20,  correct:false, partial:true,  title:'Premature CPR',
@@ -1326,6 +1358,7 @@ Game.decide = function(scene, choice) {
     const cls = data.correct ? 'fb-correct' : data.partial ? 'fb-partial' : 'fb-wrong';
     fb.className = `feedback-panel show ${cls}`;
     fb.innerHTML = `
+      ${data.story ? `<p class="decision-story">${data.story}</p>` : ''}
       <div class="feedback-title">${data.correct ? ICONS.check : data.partial ? ICONS.partial : ICONS.cross} ${data.title}</div>
       <div class="feedback-text">${data.text}</div>
       <div class="feedback-tip"><strong>Protocol:</strong> ${data.tip}</div>`;
@@ -1379,10 +1412,14 @@ Game.goTo = function(id) {
       `Jordan has been buried approximately ${formatTime(t)}`;
     const depth = (1.0 + Math.random() * 0.8).toFixed(1);
     document.getElementById('shovel-depth').textContent = depth + 'm';
+    const introDepth = document.getElementById('intro-depth');
+    if (introDepth) introDepth.textContent = State.probeDepth || '?';
   }
   if (id === 'care') {
     document.getElementById('care-time-text').textContent =
       `Jordan has been buried approximately ${formatTime(State.timerSecs)}`;
+    const introElapsed = document.getElementById('intro-elapsed');
+    if (introElapsed) introElapsed.textContent = formatTime(State.timerSecs);
     Audio.startPulse();
   }
   if (id === 'debrief') {
@@ -1409,6 +1446,8 @@ Game.restart = function() {
   State.choices = {};
   State.probeAttempts = 0;
   State.beaconSteps = 0;
+  State.probeDepth = null;
+  State.jordanSurvived = null;
   // Reset decision UIs
   ['response','help','shovel','care'].forEach(sc => {
     const opts = document.querySelectorAll(`#opts-${sc} .opt-btn`);
@@ -1448,13 +1487,46 @@ function formatTime(secs) {
 
 // ── BEACON MINI-GAME ─────────────────────────────────────────────────────────
 const BeaconGame = (() => {
-  const W = 380, H = 380; // canvas logical size in game-meters * scale
-  const SCALE = W / 25;   // 25 "meters" across canvas width
+  const SCALE = 380 / 25; // pixels per meter at base 380px
+  // Player starts at (12.5, 22), victim at y=3–12. Min distance = 10m.
+  // SIGNAL_RANGE=8 guarantees all runs start with no signal.
+  const SIGNAL_RANGE = 8;
   let canvas, ctx, animFrame;
   let victim, player, target;
   let trail = [];
-  let found = false;
   let moveInterval = null;
+
+  // Phase state
+  let phase = 'SEARCHING'; // SEARCHING | COARSE | FINE | PINPOINTED
+  let bestMinDist = Infinity, bestMinPos = null;
+  let dipoleAngle = 0;
+  let bracketedX = false, bracketedY = false;
+  let closeCount = 0, lastWasClose = false, maxGapAfterClose = 0;
+
+  function setInstruction(text) {
+    const el = document.getElementById('beacon-instruction');
+    if (el) el.innerHTML = text;
+  }
+
+  function fluxAngle() {
+    const dx = victim.x - player.x, dy = victim.y - player.y;
+    const rh = Math.hypot(dx, dy);
+    if (rh < 0.001) return 0;
+    const rhx = dx/rh, rhy = dy/rh;
+    const mx = Math.cos(dipoleAngle), my = Math.sin(dipoleAngle);
+    const dot = mx*rhx + my*rhy;
+    let Bx = 3*dot*rhx - mx;
+    let By = 3*dot*rhy - my;
+    const Bm = Math.hypot(Bx, By);
+    if (Bm < 0.001) return Math.atan2(dy, dx);
+    Bx /= Bm; By /= Bm;
+    if (Bx*rhx + By*rhy < 0) { Bx = -Bx; By = -By; }
+    return Math.atan2(By, Bx);
+  }
+
+  function toCanvasX(gx) { return gx * (canvas.width / (window.devicePixelRatio || 1) / 25); }
+  function toCanvasY(gy) { return gy * (canvas.height / (window.devicePixelRatio || 1) / 25); }
+  function toCanvasScale(gm) { return gm * (canvas.width / (window.devicePixelRatio || 1) / 25); }
 
   function init() {
     canvas = document.getElementById('beacon-canvas');
@@ -1467,39 +1539,43 @@ const BeaconGame = (() => {
     ctx.scale(dpr, dpr);
     const cw = disp.width, ch = disp.height;
 
-    // Place victim at random position (meters)
-    victim = {
-      x: 5 + Math.random() * 15,
-      y: 8 + Math.random() * 10
-    };
-    player = { x: cw/SCALE/2, y: 1.5 };
+    // Reset phase state
+    phase = 'SEARCHING';
+    bestMinDist = Infinity;
+    bestMinPos = null;
+    bracketedX = false;
+    bracketedY = false;
+    closeCount = 0;
+    lastWasClose = false;
+    maxGapAfterClose = 0;
+    dipoleAngle = Math.random() * Math.PI * 2;
+
+    // Place victim in upper debris (y=3–12), player at lower center (y=22).
+    // Min d=10m > SIGNAL_RANGE=8 — all runs start with no signal.
+    victim = { x: 5 + Math.random() * 15, y: 3 + Math.random() * 9 };
+    player = { x: 12.5, y: 22 };
     target = { ...player };
     trail  = [{ ...player }];
-    found  = false;
 
     State.beaconSteps = 0;
     document.getElementById('bhud-probes').textContent = '0';
+
+    // Hide arrow initially (only shown in COARSE)
+    const arrowWrap = document.querySelector('.beacon-arrow-wrap');
+    if (arrowWrap) arrowWrap.style.visibility = 'hidden';
 
     canvas.onclick = canvas.ontouchend = null;
     canvas.addEventListener('click', handleTap);
     canvas.addEventListener('touchend', handleTouch, { passive:false });
 
-    Audio.startBeacon(dist());
-    document.getElementById('beacon-instruction').textContent =
-      'Tap on the terrain to move. Minimize the distance reading to locate the burial.';
+    // Do NOT start beacon audio here — start on first COARSE acquisition
+    setInstruction('Begin systematic strip search — 10 m lanes. No signal detected.');
     cancelAnimationFrame(animFrame);
     loop(cw, ch);
   }
 
-  function dist() {
-    return Math.sqrt((player.x - victim.x)**2 + (player.y - victim.y)**2);
-  }
-  function angle() {
-    return Math.atan2(victim.y - player.y, victim.x - player.x);
-  }
-
   function handleTap(e) {
-    if (found) return;
+    if (phase === 'PINPOINTED') return;
     const r = canvas.getBoundingClientRect();
     const mx = (e.clientX - r.left)  / r.width  * 25;
     const my = (e.clientY - r.top)   / r.height * 25;
@@ -1507,7 +1583,7 @@ const BeaconGame = (() => {
   }
   function handleTouch(e) {
     e.preventDefault();
-    if (found || !e.changedTouches.length) return;
+    if (phase === 'PINPOINTED' || !e.changedTouches.length) return;
     const t = e.changedTouches[0];
     const r = canvas.getBoundingClientRect();
     const mx = (t.clientX - r.left) / r.width  * 25;
@@ -1516,59 +1592,18 @@ const BeaconGame = (() => {
   }
 
   function moveTo(mx, my) {
-    target = { x: Math.max(0.5, Math.min(24.5, mx)), y: Math.max(0.5, Math.min(24.5, my)) };
-  }
-
-  function updateHUDBeacon(cw, ch) {
-    const d = dist();
-    const distEl = document.getElementById('bhud-dist');
-    const displayDist = d < 0.5 ? '<1' : Math.round(d);
-    distEl.textContent = displayDist + 'm';
-    distEl.className = 'bhud-val' + (d < 3 ? (d < 1 ? ' close' : ' near') : '');
-
-    // Signal bar
-    const signalPct = Math.max(0, Math.min(100, 100 - d * 4));
-    document.getElementById('beacon-signal-fill').style.width = signalPct + '%';
-    document.getElementById('beacon-signal-text').textContent =
-      d < 1 ? 'Strong — probe ready!' : d < 5 ? 'Strong' : d < 12 ? 'Moderate' : 'Weak';
-
-    // Arrow
-    const a = angle() - Math.PI/2; // SVG arrow points up by default
-    document.getElementById('beacon-arrow-svg').style.transform = `rotate(${a * 180/Math.PI}deg)`;
-
-    Audio.updateBeacon(d);
-
-    // Phase labels
-    if (d < 2 && !found) {
-      document.getElementById('beacon-instruction').textContent =
-        'Signal strong — continue closing in to trigger probe phase.';
-    } else if (d < 3) {
-      document.getElementById('beacon-instruction').textContent =
-        'Fine search: systematic grid pattern. Signal is strong.';
-    } else if (d < 10) {
-      document.getElementById('beacon-instruction').textContent =
-        'Signal search: follow the flux line. Minimize the reading.';
-    } else {
-      document.getElementById('beacon-instruction').textContent =
-        'Coarse search: move across the slope to acquire a signal.';
+    let tx = Math.max(0.5, Math.min(24.5, mx));
+    let ty = Math.max(0.5, Math.min(24.5, my));
+    // In FINE phase, cap step size at 1.5 game-metres
+    if (phase === 'FINE') {
+      const ddx = tx - player.x, ddy = ty - player.y;
+      const ddm = Math.hypot(ddx, ddy);
+      if (ddm > 1.5) {
+        tx = player.x + (ddx / ddm) * 1.5;
+        ty = player.y + (ddy / ddm) * 1.5;
+      }
     }
-
-    if (d < 1.5 && !found) {
-      found = true;
-      Audio.stopBeacon();
-      Audio.success();
-      if (navigator.vibrate) navigator.vibrate([50,30,50,30,100]);
-      State.score += 150;
-      ackScore();
-      updateHUD();
-      document.getElementById('bhud-dist').textContent = 'FOUND';
-      document.getElementById('bhud-dist').style.color = 'var(--c-ok)';
-      document.getElementById('beacon-instruction').textContent =
-        'Signal confirmed. Proceed to probe.';
-      canvas.removeEventListener('click', handleTap);
-      canvas.removeEventListener('touchend', handleTouch);
-      setTimeout(() => Game.goTo('probe'), 1600);
-    }
+    target = { x: tx, y: ty };
   }
 
   const TREE_POSITIONS = [
@@ -1582,14 +1617,14 @@ const BeaconGame = (() => {
     // Smoothly move player toward target
     const spd = 0.15;
     const dx = target.x - player.x, dy = target.y - player.y;
-    const mag = Math.sqrt(dx*dx + dy*dy);
+    const mag = Math.hypot(dx, dy);
     if (mag > 0.05) {
       player.x += (dx/mag) * Math.min(spd, mag);
       player.y += (dy/mag) * Math.min(spd, mag);
       State.beaconSteps++;
       // Add trail point every few frames
       const last = trail[trail.length-1];
-      if (Math.sqrt((player.x-last.x)**2+(player.y-last.y)**2) > 0.4) {
+      if (Math.hypot(player.x-last.x, player.y-last.y) > 0.4) {
         trail.push({...player});
         if (trail.length > 120) trail.shift();
       }
@@ -1630,8 +1665,8 @@ const BeaconGame = (() => {
     }
 
     // Trees
-    TREE_POSITIONS.forEach(([tx,ty]) => {
-      const px2 = tx*s, py2 = ty*s;
+    TREE_POSITIONS.forEach(([tx2,ty2]) => {
+      const px2 = tx2*s, py2 = ty2*s;
       ctx.fillStyle = '#2a5a2a';
       ctx.beginPath();
       ctx.moveTo(px2, py2-s*0.8);
@@ -1645,6 +1680,46 @@ const BeaconGame = (() => {
       ctx.lineTo(px2+s*0.3, py2-s*0.2);
       ctx.closePath(); ctx.fill();
     });
+
+    // Strip guides in SEARCHING
+    if (phase === 'SEARCHING') {
+      ctx.save();
+      ctx.strokeStyle = 'rgba(43,53,64,0.8)';
+      ctx.lineWidth = 1;
+      ctx.setLineDash([4, 8]);
+      [8, 14, 20].forEach(gy => {
+        const py = gy * s;
+        ctx.beginPath(); ctx.moveTo(0, py); ctx.lineTo(cw, py); ctx.stroke();
+      });
+      ctx.restore();
+    }
+
+    // Flux-line arc in COARSE
+    if (phase === 'COARSE') {
+      const ang = fluxAngle();
+      const px = player.x * s, py = player.y * s;
+      const arcR = 2.5 * s;
+      ctx.save();
+      ctx.strokeStyle = 'rgba(143,182,207,0.35)';
+      ctx.lineWidth = 2;
+      ctx.setLineDash([3, 6]);
+      ctx.beginPath();
+      ctx.arc(px, py, arcR, ang - Math.PI/6, ang + Math.PI/6);
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    // Bracketing cross in FINE
+    if (phase === 'FINE' && bestMinPos) {
+      const bx = bestMinPos.x * s, by = bestMinPos.y * s;
+      const cs = 8;
+      ctx.save();
+      ctx.strokeStyle = '#c79a4e';
+      ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(bx-cs, by); ctx.lineTo(bx+cs, by); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(bx, by-cs); ctx.lineTo(bx, by+cs); ctx.stroke();
+      ctx.restore();
+    }
 
     // Trail
     if (trail.length > 1) {
@@ -1660,9 +1735,9 @@ const BeaconGame = (() => {
     ctx.fillStyle = 'rgba(143,182,207,0.25)';
     ctx.beginPath(); ctx.arc(trail[0].x*s, trail[0].y*s, 6, 0, Math.PI*2); ctx.fill();
 
-    // Beacon signal ring when close
-    const d = dist();
-    if (d < 5) {
+    // Beacon signal ring when close (in COARSE/FINE)
+    const d = Math.hypot(player.x - victim.x, player.y - victim.y);
+    if (d < 5 && phase !== 'SEARCHING') {
       ctx.beginPath();
       ctx.arc(player.x*s, player.y*s, (5-d)*s*0.2, 0, Math.PI*2);
       ctx.strokeStyle = 'rgba(111,162,135,0.3)';
@@ -1672,20 +1747,125 @@ const BeaconGame = (() => {
     // Player
     ctx.save();
     ctx.translate(player.x*s, player.y*s);
-    // Body
     ctx.beginPath(); ctx.arc(0,0,8,0,Math.PI*2);
     ctx.fillStyle = '#1a3a6a'; ctx.fill();
     ctx.strokeStyle = '#8fb6cf'; ctx.lineWidth = 2; ctx.stroke();
-    // Direction indicator
-    const a = angle();
-    ctx.beginPath();
-    ctx.moveTo(Math.cos(a)*6, Math.sin(a)*6);
-    ctx.lineTo(Math.cos(a)*12, Math.sin(a)*12);
-    ctx.strokeStyle = found ? '#6fa287' : '#8fb6cf';
-    ctx.lineWidth = 2.5; ctx.stroke();
+    // Direction indicator (toward target)
+    const tDx = target.x - player.x, tDy = target.y - player.y;
+    const tMag = Math.hypot(tDx, tDy);
+    if (tMag > 0.1) {
+      const ta = Math.atan2(tDy, tDx);
+      ctx.beginPath();
+      ctx.moveTo(Math.cos(ta)*6, Math.sin(ta)*6);
+      ctx.lineTo(Math.cos(ta)*12, Math.sin(ta)*12);
+      ctx.strokeStyle = phase === 'PINPOINTED' ? '#6fa287' : '#8fb6cf';
+      ctx.lineWidth = 2.5; ctx.stroke();
+    }
     ctx.restore();
 
-    updateHUDBeacon(cw, ch);
+    // Update HUD and phase logic
+    updateBeaconHUD(cw, ch, d);
+  }
+
+  function updateBeaconHUD(cw, ch, d) {
+    // Distance display
+    const distEl = document.getElementById('bhud-dist');
+    const displayDist = d < 0.5 ? '<1' : Math.round(d);
+    distEl.textContent = displayDist + 'm';
+    distEl.className = 'bhud-val' + (d < 3 ? (d < 1 ? ' close' : ' near') : '');
+
+    // Signal bar
+    const signalPct = Math.max(0, Math.min(100, 100 - (d / SIGNAL_RANGE) * 100));
+    document.getElementById('beacon-signal-fill').style.width = (phase === 'SEARCHING' ? 0 : signalPct) + '%';
+    document.getElementById('beacon-signal-text').textContent =
+      phase === 'SEARCHING' ? '--' : d < 1 ? 'Strong — probe ready!' : d < 5 ? 'Strong' : d < 12 ? 'Moderate' : 'Weak';
+
+    Audio.updateBeacon(d);
+
+    // Arrow visibility: only in COARSE
+    const arrowWrap = document.querySelector('.beacon-arrow-wrap');
+    if (arrowWrap) {
+      arrowWrap.style.visibility = (phase === 'COARSE') ? 'visible' : 'hidden';
+    }
+
+    // Update arrow direction using flux angle in COARSE
+    if (phase === 'COARSE') {
+      const a = fluxAngle() - Math.PI/2;
+      document.getElementById('beacon-arrow-svg').style.transform = `rotate(${a * 180/Math.PI}deg)`;
+    }
+
+    // Phase transitions
+    if (phase === 'SEARCHING') {
+      if (d <= SIGNAL_RANGE) {
+        phase = 'COARSE';
+        Audio.startBeacon(d);
+        setInstruction(`Signal acquired — ${Math.round(d)} m. Follow the arrow. The signal curves; trust the arrow, not the mountain.`);
+      } else {
+        setInstruction('Begin systematic strip search — 10 m lanes. No signal detected.');
+      }
+    } else if (phase === 'COARSE') {
+      if (d <= 3) {
+        phase = 'FINE';
+        setInstruction("You're close. Slow down — this is where people make mistakes. Find the minimum reading.");
+      } else {
+        setInstruction(`Signal: ${Math.round(d)} m — follow the arrow.`);
+      }
+    } else if (phase === 'FINE') {
+      const noise = (Math.sin(player.x * 7.3 + player.y * 3.1) * 0.15);
+      const displayD = Math.max(0.1, d + noise);
+
+      // Track visual minimum for canvas cross
+      if (displayD < bestMinDist) {
+        bestMinDist = displayD;
+        bestMinPos = { x: player.x, y: player.y };
+      }
+
+      // Bracketing: two close approaches (d<0.8m) with ≥1.5m gap between them
+      if (d < 0.8) {
+        if (!lastWasClose) {
+          closeCount++;
+          lastWasClose = true;
+          if (closeCount === 1) {
+            bracketedX = true;
+            maxGapAfterClose = 0;
+          } else if (closeCount >= 2 && maxGapAfterClose >= 1.5) {
+            bracketedY = true;
+          }
+        }
+      } else {
+        if (lastWasClose) lastWasClose = false;
+        if (bracketedX && !bracketedY) maxGapAfterClose = Math.max(maxGapAfterClose, d);
+      }
+
+      // Instruction
+      if (!bracketedX) {
+        setInstruction(`Fine search: ${displayD.toFixed(1)} m — move slowly toward the minimum reading.`);
+      } else if (!bracketedY) {
+        if (maxGapAfterClose < 1.5) {
+          setInstruction(`Minimum located at ${bestMinDist.toFixed(1)} m. Back up at least 1.5 m, then re-approach from a new angle.`);
+        } else {
+          setInstruction(`Good — now re-approach from a different direction to confirm. ${displayD.toFixed(1)} m.`);
+        }
+      }
+
+      distEl.textContent = displayD.toFixed(1) + 'm';
+      distEl.className = 'bhud-val' + (displayD < 3 ? (displayD < 1 ? ' close' : ' near') : '');
+
+      // Win: both approaches bracketed
+      if (bracketedX && bracketedY) {
+        phase = 'PINPOINTED';
+        const depth = (0.5 + Math.random() * 1.7).toFixed(1);
+        State.probeDepth = depth;
+        Audio.stopBeacon();
+        Audio.success();
+        if (navigator.vibrate) navigator.vibrate([50,30,50,30,100]);
+        State.score += 150; ackScore(); updateHUD();
+        setInstruction(`Pinpoint confirmed. Estimated depth: ${depth} m. Proceed to probe.`);
+        canvas.removeEventListener('click', handleTap);
+        canvas.removeEventListener('touchend', handleTouch);
+        setTimeout(() => Game.goTo('probe'), 1800);
+      }
+    }
   }
 
   return { init };
@@ -1693,84 +1873,218 @@ const BeaconGame = (() => {
 
 // ── PROBE MINI-GAME ──────────────────────────────────────────────────────────
 const ProbeGame = (() => {
-  let victimCell, attempts;
+  let spiral = [];
+  let probeIdx = 0;
+  let victimIdx = 0;
+  let probeHit = false;
+  let probeCanvas, probeCtx;
+
+  function buildSpiral() {
+    const pts = [{ x: 0, y: 0 }]; // center
+    const rings = [
+      { r: 0.25, n: 8 },
+      { r: 0.50, n: 12 },
+      { r: 0.75, n: 16 },
+    ];
+    rings.forEach(({ r, n }) => {
+      for (let i = 0; i < n; i++) {
+        const a = (i / n) * Math.PI * 2;
+        pts.push({ x: r * Math.cos(a), y: r * Math.sin(a) });
+      }
+    });
+    return pts;
+  }
 
   function init() {
-    victimCell = Math.floor(Math.random() * 9);
-    attempts   = 0;
-    document.getElementById('probe-attempts-text').textContent = 'Probes used: 0 of 9';
-    document.getElementById('probe-result').style.display = 'none';
-    const nextBtn = document.getElementById('next-probe');
-    if (nextBtn) nextBtn.style.display = 'none';
+    spiral = buildSpiral();
+    probeIdx = 0;
+    probeHit = false;
 
-    const grid = document.getElementById('probe-grid');
-    grid.innerHTML = '';
-    for (let i=0; i<9; i++) {
-      const cell = document.createElement('div');
-      cell.className = 'probe-cell';
-      cell.dataset.idx = i;
-      cell.onclick = () => probeCell(i, cell);
-      grid.appendChild(cell);
+    // Victim weighted toward center: 70% center, 20% ring1, 10% ring2
+    const r = Math.random();
+    if (r < 0.7) victimIdx = 0;
+    else if (r < 0.9) victimIdx = 1 + Math.floor(Math.random() * 8);
+    else victimIdx = 9 + Math.floor(Math.random() * 12);
+
+    renderProbeScene();
+  }
+
+  function renderProbeScene() {
+    const scene = document.getElementById('scene-probe');
+    scene.innerHTML = `
+      <div class="probe-header">
+        <div class="probe-phase">Spiral Probe Confirmation</div>
+        <div class="probe-q" id="probe-instruction">Systematic. Outward from the mark. Jordan's somewhere in this spiral.</div>
+        <div class="probe-sub">Tap to probe the highlighted position. 25 cm intervals.</div>
+      </div>
+      <div class="probe-grid-wrap">
+        <canvas id="probe-spiral-canvas" width="280" height="280" style="border-radius:var(--r);border:1px solid var(--c-border);display:block;max-width:100%;touch-action:none;"></canvas>
+        <div id="probe-result" style="text-align:center;font-size:14px;color:var(--c-muted);display:none;padding:8px 0;"></div>
+      </div>
+      <div class="btn-wrap" style="padding-top:8px">
+        <button class="btn-primary" id="probe-btn" onclick="ProbeGame.probe()" style="font-size:18px;letter-spacing:2px">PROBE</button>
+      </div>
+      <div class="btn-wrap" id="next-probe" style="display:none">
+        <button class="btn-primary" onclick="Game.goTo('shovel')">Proceed to Excavation</button>
+      </div>
+      <div class="scene-scroll-pad"></div>
+    `;
+
+    probeCanvas = document.getElementById('probe-spiral-canvas');
+    probeCtx = probeCanvas.getContext('2d');
+
+    // Handle DPR
+    const dpr = window.devicePixelRatio || 1;
+    probeCanvas.width = 280 * dpr;
+    probeCanvas.height = 280 * dpr;
+    probeCanvas.style.width = '280px';
+    probeCanvas.style.height = '280px';
+    probeCtx.scale(dpr, dpr);
+
+    drawProbeCanvas();
+  }
+
+  function drawProbeCanvas() {
+    if (!probeCtx) return;
+    const W = 280, H = 280;
+    const cx = W / 2, cy = H / 2;
+    const scale = 160; // 1m = 160px
+
+    probeCtx.clearRect(0, 0, W, H);
+
+    // Background
+    probeCtx.fillStyle = '#181f27';
+    probeCtx.fillRect(0, 0, W, H);
+
+    // Snow texture overlay
+    probeCtx.fillStyle = 'rgba(200,220,240,0.07)';
+    for (let gx = 0; gx < W; gx += 8) for (let gy = 0; gy < H; gy += 8)
+      if ((gx+gy) % 16 === 0) probeCtx.fillRect(gx, gy, 1, 1);
+
+    // Draw ring guides
+    [0.25, 0.50, 0.75].forEach(r => {
+      probeCtx.beginPath();
+      probeCtx.arc(cx, cy, r * scale, 0, Math.PI * 2);
+      probeCtx.strokeStyle = 'rgba(43,53,64,0.6)';
+      probeCtx.lineWidth = 1;
+      probeCtx.setLineDash([3, 5]);
+      probeCtx.stroke();
+      probeCtx.setLineDash([]);
+    });
+
+    // Draw all spiral points
+    spiral.forEach((pt, i) => {
+      const px = cx + pt.x * scale;
+      const py = cy + pt.y * scale;
+
+      if (probeHit && i === victimIdx) {
+        // Hit point — gold filled circle
+        probeCtx.beginPath();
+        probeCtx.arc(px, py, 9, 0, Math.PI * 2);
+        probeCtx.fillStyle = '#c79a4e';
+        probeCtx.fill();
+        probeCtx.strokeStyle = '#e6ebf0';
+        probeCtx.lineWidth = 1.5;
+        probeCtx.stroke();
+      } else if (i < probeIdx) {
+        // Already probed miss — small dim cross
+        probeCtx.strokeStyle = 'rgba(118,131,143,0.5)';
+        probeCtx.lineWidth = 1.5;
+        const cs = 4;
+        probeCtx.beginPath();
+        probeCtx.moveTo(px - cs, py - cs); probeCtx.lineTo(px + cs, py + cs);
+        probeCtx.moveTo(px + cs, py - cs); probeCtx.lineTo(px - cs, py + cs);
+        probeCtx.stroke();
+      } else if (i === probeIdx && !probeHit) {
+        // Next point to probe — bright filled circle
+        probeCtx.beginPath();
+        probeCtx.arc(px, py, 10, 0, Math.PI * 2);
+        probeCtx.fillStyle = 'rgba(143,182,207,0.2)';
+        probeCtx.fill();
+        probeCtx.beginPath();
+        probeCtx.arc(px, py, 7, 0, Math.PI * 2);
+        probeCtx.fillStyle = '#8fb6cf';
+        probeCtx.fill();
+        probeCtx.strokeStyle = '#e6ebf0';
+        probeCtx.lineWidth = 1.5;
+        probeCtx.stroke();
+      } else {
+        // Future point — small hollow circle
+        probeCtx.beginPath();
+        probeCtx.arc(px, py, 4, 0, Math.PI * 2);
+        probeCtx.strokeStyle = 'rgba(43,53,64,0.7)';
+        probeCtx.lineWidth = 1;
+        probeCtx.stroke();
+      }
+    });
+
+    // Center label
+    probeCtx.fillStyle = 'rgba(118,131,143,0.7)';
+    probeCtx.font = '9px IBM Plex Mono';
+    probeCtx.textAlign = 'center';
+    probeCtx.fillText('MARK', cx, cy + 22);
+  }
+
+  function showProbeResult(hit, pts) {
+    const instrEl = document.getElementById('probe-instruction');
+    if (instrEl) instrEl.textContent = `Contact at ${State.probeDepth || '?'} m. Mark and begin strategic excavation.`;
+
+    const res = document.getElementById('probe-result');
+    if (res) {
+      res.style.display = 'block';
+      res.style.color = pts >= 100 ? 'var(--c-ok)' : 'var(--c-warn)';
+      res.textContent = pts >= 100 ? `Strike confirmed — probe ${probeIdx + 1}. Excellent technique.` : `Strike confirmed at probe ${probeIdx + 1}. Continue to excavation.`;
+    }
+
+    const probeBtn = document.getElementById('probe-btn');
+    if (probeBtn) probeBtn.disabled = true;
+
+    const nextBtn = document.getElementById('next-probe');
+    if (nextBtn) {
+      nextBtn.style.display = 'flex';
+      setTimeout(() => nextBtn.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 300);
     }
   }
 
-  function probeCell(idx, el) {
-    if (el.classList.contains('probed')) return;
-    attempts++;
-    el.classList.add('probed');
-    document.getElementById('probe-attempts-text').textContent = `Probes used: ${attempts} of 9`;
+  function doProbe() {
+    if (probeHit || probeIdx >= spiral.length) return;
 
-    if (idx === victimCell) {
-      el.classList.add('hit');
-      el.innerHTML = ICONS.check;
+    const pt = spiral[probeIdx];
+    if (probeIdx === victimIdx) {
+      // HIT
+      probeHit = true;
       Audio.probeHit();
       if (navigator.vibrate) navigator.vibrate(200);
 
-      // Score
-      const pts = attempts <= 3 ? 150 : attempts <= 6 ? 100 : 50;
-      State.score += pts;
-      ackScore();
-      updateHUD();
+      const r = Math.hypot(pt.x, pt.y);
+      let pts = 50;
+      if (r === 0) pts = 150;
+      else if (r <= 0.25) pts = 150;
+      else if (r <= 0.50) pts = 100;
 
-      // Disable remaining
-      document.querySelectorAll('.probe-cell').forEach(c => c.onclick = null);
-
-      const res = document.getElementById('probe-result');
-      res.style.display = 'block';
-      const msg = attempts <= 3
-        ? 'Strike confirmed — first search zone. Optimal probe technique.'
-        : attempts <= 6
-        ? 'Strike confirmed — systematic search effective.'
-        : 'Strike confirmed. Tighten probe spacing (25 cm) in future searches.';
-      res.textContent = msg;
-      res.style.color = attempts <= 3 ? 'var(--c-ok)' : attempts <= 6 ? 'var(--c-ice)' : 'var(--c-warn)';
-      State.probeAttempts = attempts;
-
-      const nextBtn = document.getElementById('next-probe');
-      if (nextBtn) {
-        nextBtn.style.display = 'flex';
-        setTimeout(() => nextBtn.scrollIntoView({behavior:'smooth',block:'nearest'}), 300);
-      }
+      State.score += pts; ackScore(); updateHUD();
+      drawProbeCanvas();
+      showProbeResult(true, pts);
     } else {
-      el.classList.add('miss');
-      el.innerHTML = ICONS.cross;
+      // MISS
       Audio.probeMiss();
-      if (navigator.vibrate) navigator.vibrate([30,20,30]);
+      if (navigator.vibrate) navigator.vibrate([30, 20, 30]);
+      probeIdx++;
+      drawProbeCanvas();
 
-      if (attempts >= 9) {
-        // Reveal victim
-        const cells = document.querySelectorAll('.probe-cell');
-        cells[victimCell].classList.remove('probed');
-        cells[victimCell].classList.add('hit');
-        cells[victimCell].innerHTML = ICONS.check;
-        State.probeAttempts = attempts;
-        const nextBtn = document.getElementById('next-probe');
-        if (nextBtn) nextBtn.style.display = 'flex';
+      const instrEl = document.getElementById('probe-instruction');
+      if (instrEl) instrEl.textContent = `Miss. ${spiral.length - probeIdx} positions remaining in spiral.`;
+
+      if (probeIdx >= spiral.length) {
+        // Exhausted all points
+        showProbeResult(true, 50);
       }
     }
+
+    State.probeAttempts = probeIdx + (probeHit ? 1 : 0);
   }
 
-  return { init };
+  return { init, probe: doProbe };
 })();
 
 // ── DEBRIEF ──────────────────────────────────────────────────────────────────
@@ -1780,6 +2094,38 @@ const Debrief = (() => {
     const surv = survivalPct(t);
     const pct = Math.round(State.score / MAX_SCORE * 100);
     const { grade, cls: outcomeClass, label: outcomeLabel } = gradeFor(pct);
+
+    // Compute Jordan's outcome
+    const rawSurvival = survivalPct(State.timerSecs);
+    const choiceBonus = Math.round((State.score / MAX_SCORE) * 15);
+    const effectiveSurvival = Math.min(93, rawSurvival + choiceBonus);
+    State.jordanSurvived = Math.random() * 100 < effectiveSurvival;
+
+    // Outcome block HTML
+    const outcomeHtml = State.jordanSurvived
+      ? `<div class="outcome-block outcome-survived">
+           <div class="outcome-label">SUBJECT OUTCOME</div>
+           <div class="outcome-name">Jordan — Survived</div>
+           <p>Jordan was evacuated by helicopter and treated for mild hypothermia. Full recovery expected. Elapsed time and correct protocol execution were the deciding factors.</p>
+         </div>`
+      : `<div class="outcome-block outcome-lost">
+           <div class="outcome-label">SUBJECT OUTCOME</div>
+           <div class="outcome-name">Jordan — Did Not Survive</div>
+           <p>Jordan did not survive.</p>
+           <p class="outcome-caveat"><em>Time of burial: ${formatTime(State.timerSecs)}. This outcome does not mean you failed — even optimal response cannot overcome extended burial time or the randomness of trauma. In real avalanche rescues, companions with correct training and equipment still lose people. What matters is that you gave Jordan the best possible chance.</em></p>
+         </div>`;
+
+    // Prepend outcome block to debrief header
+    const debriefHeader = document.querySelector('#scene-debrief .debrief-header');
+    if (debriefHeader) {
+      // Remove any existing outcome block first
+      const existing = document.getElementById('jordan-outcome-block');
+      if (existing) existing.remove();
+      const outcomeEl = document.createElement('div');
+      outcomeEl.id = 'jordan-outcome-block';
+      outcomeEl.innerHTML = outcomeHtml;
+      debriefHeader.insertAdjacentElement('afterend', outcomeEl);
+    }
 
     document.getElementById('debrief-outcome-label').textContent = outcomeLabel;
     document.getElementById('debrief-outcome-label').className = `debrief-outcome ${outcomeClass}`;
